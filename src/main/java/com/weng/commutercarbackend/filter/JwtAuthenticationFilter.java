@@ -30,7 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        //这里的username是openid
+        //这里的username是学号/工号
         String username = jwtUtil.extractUsername(token);//解析的时候会自动判断是否过期
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             //解析token得到用户名后，查找数据库，看是否存在此用户

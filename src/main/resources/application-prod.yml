@@ -6,8 +6,8 @@ spring:
     username: root
     password: root
   # Redis 配置
-#  data:
-#    redis:
-#      database: 0
-#      host: 8.130.35.16
-#      port: 6379
+  data:
+    redis:
+      database: 0
+      host: 8.130.35.16
+      port: 6379
