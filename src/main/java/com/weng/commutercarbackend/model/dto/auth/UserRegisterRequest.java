@@ -25,7 +25,9 @@ public record UserRegisterRequest(
         String phone,
 
         @NotNull(message = "角色不能为空")
-        @Pattern(regexp = "^[A-Z]{6}$|^[A-Z]{9}$", message = "角色格式不正确")
+//        @Pattern(regexp = "",message = "角色格式不正确")
+        @Pattern(regexp = "^[01]$", message = "角色格式不正确")
         String role
+
 ) {
 }

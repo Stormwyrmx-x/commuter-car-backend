@@ -57,7 +57,7 @@ public class User implements Serializable, UserDetails {
     private String phone;
 
     /**
-     * 用户角色（PASSENGER或DRIVER）
+     * 用户角色（0是乘客，1是司机）
      */
     private String role;
 
