@@ -53,6 +53,8 @@ public class SecurityConfig {
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(httpSecurityCorsConfigurer ->
                         httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()))
+                //当一个HTTP请求到达应用程序时，Spring Security的过滤器链会按照它们在配置中定义的顺序开始处理这个请求。
+                //在你的SecurityConfig.java文件中，authorizeHttpRequests方法定义的安全规则是在addFilterBefore方法之前调用的，所以这些规则会先被应用到请求上。
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests.requestMatchers("/**",
                                         //无需加上api前缀.The pattern must not contain the context path

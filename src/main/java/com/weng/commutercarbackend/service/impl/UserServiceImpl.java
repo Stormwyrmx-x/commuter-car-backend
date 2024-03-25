@@ -3,8 +3,6 @@ package com.weng.commutercarbackend.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.weng.commutercarbackend.common.ResultCodeEnum;
 import com.weng.commutercarbackend.exception.BusinessException;
 import com.weng.commutercarbackend.mapper.UserMapper;
@@ -16,18 +14,12 @@ import com.weng.commutercarbackend.service.UserService;
 import com.weng.commutercarbackend.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -79,20 +71,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public Long register(UserRegisterRequest registerRequest)
-    {
+    public Long register(UserRegisterRequest registerRequest) {
         //1.密码和校验密码相同
-        if (!Objects.equals(registerRequest.password(), registerRequest.checkPassword()))
-        {
-            throw new BusinessException(ResultCodeEnum.PARAMS_ERROR,"两次密码输入不一致");
+        if (!Objects.equals(registerRequest.password(), registerRequest.checkPassword())) {
+            throw new BusinessException(ResultCodeEnum.PARAMS_ERROR, "两次密码输入不一致");
         }
         //2.账号不能重复(查数据库)
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
         userLambdaQueryWrapper.eq(User::getUsername, registerRequest.username());
         Long count = userMapper.selectCount(userLambdaQueryWrapper);
-        if (count > 0)
-        {
-            throw new BusinessException(ResultCodeEnum.PARAMS_ERROR,"账号重复");
+        if (count > 0) {
+            throw new BusinessException(ResultCodeEnum.PARAMS_ERROR, "账号重复");
         }
         //3.存储到数据库
         User user = User.builder()

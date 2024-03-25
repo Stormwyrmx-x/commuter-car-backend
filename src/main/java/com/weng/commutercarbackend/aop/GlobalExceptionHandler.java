@@ -84,7 +84,14 @@ public class GlobalExceptionHandler<T>
     public Result<T> exceptionHandler(Exception exception)
     {
         log.error("Exception:{}",exception.getClass());
-        return Result.error(ResultCodeEnum.SYSTEM_ERROR);
+        return Result.error(ResultCodeEnum.SYSTEM_ERROR,exception.getMessage());
     }
+
+//    @ExceptionHandler(Exception.class)
+//    public Result<T> exceptionHandler(Exception exception)
+//    {
+//        log.error("Exception:{}",exception.getClass());
+//        return Result.error(ResultCodeEnum.SYSTEM_ERROR);
+//    }
 
 }
