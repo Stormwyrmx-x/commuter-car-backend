@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weng.commutercarbackend.mapper.StopMapper">
+
+<!--    <resultMap id="BaseResultMap" type="generator.domain.Stop">-->
+<!--            <id property="id" column="id" jdbcType="BIGINT"/>-->
+<!--            <result property="changan" column="changan" jdbcType="INTEGER"/>-->
+<!--            <result property="imcXa" column="imc_xa" jdbcType="INTEGER"/>-->
+<!--            <result property="ziwei" column="ziwei" jdbcType="INTEGER"/>-->
+<!--            <result property="gaoxin" column="gaoxin" jdbcType="INTEGER"/>-->
+<!--            <result property="laodong" column="laodong" jdbcType="INTEGER"/>-->
+<!--            <result property="youyi" column="youyi" jdbcType="INTEGER"/>-->
+<!--            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>-->
+<!--            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>-->
+<!--            <result property="deleted" column="deleted" jdbcType="TINYINT"/>-->
+<!--    </resultMap>-->
+
+<!--    <sql id="Base_Column_List">-->
+<!--        id,changan,imc_xa,-->
+<!--        ziwei,gaoxin,laodong,-->
+<!--        youyi,create_time,update_time,-->
+<!--        deleted-->
+<!--    </sql>-->
+</mapper>
