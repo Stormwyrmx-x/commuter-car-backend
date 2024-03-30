@@ -1,7 +1,15 @@
 package com.weng.commutercarbackend.common;
 
-public enum RoleEnum
-{
-    PASSENGER,
-    DRIVER;
+import lombok.Getter;
+
+@Getter
+public enum RoleEnum {
+    PASSENGER(0),
+    DRIVER(1);
+
+    private final Integer value;
+
+    RoleEnum(Integer value) {
+        this.value = value;
+    }
 }

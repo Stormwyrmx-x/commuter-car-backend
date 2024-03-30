@@ -1,10 +1,11 @@
 package com.weng.commutercarbackend.controller;
 
 import com.weng.commutercarbackend.common.Result;
-import com.weng.commutercarbackend.model.dto.auth.UserLoginRequest;
-import com.weng.commutercarbackend.model.dto.auth.UserRegisterRequest;
-import com.weng.commutercarbackend.model.vo.UserLoginVO;
-import com.weng.commutercarbackend.service.UserService;
+import com.weng.commutercarbackend.model.dto.auth.LoginRequest;
+import com.weng.commutercarbackend.model.dto.auth.RegisterRequest;
+import com.weng.commutercarbackend.model.vo.LoginVO;
+import com.weng.commutercarbackend.service.DriverService;
+import com.weng.commutercarbackend.service.PassengerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -13,18 +14,36 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final UserService userService;
+
+    private final DriverService driverService;
+    private final PassengerService passengerService;
 
     @PostMapping("/login")
-    public Result<UserLoginVO> login(@RequestBody @Validated UserLoginRequest userLoginRequest) {
-        UserLoginVO userLoginVO = userService.login(userLoginRequest);
-        return Result.success(userLoginVO);
+    public Result<LoginVO> login(@RequestBody @Validated LoginRequest loginRequest) {
+        // 根据角色进行不同的处理
+        LoginVO loginVO = switch (loginRequest.role()) {
+            case PASSENGER ->
+                // 如果是乘客，执行乘客的登录逻辑
+                    passengerService.login(loginRequest);
+            case DRIVER ->
+                // 如果是司机，执行司机的登录逻辑
+                    driverService.login(loginRequest);
+        };
+        return Result.success(loginVO);
     }
 
     @PostMapping("/register")
-    public Result<Long> register(@RequestBody @Validated UserRegisterRequest userRegisterRequest)
+    public Result<Long> register(@RequestBody @Validated RegisterRequest registerRequest)
     {
-        Long id=userService.register(userRegisterRequest);
+        // 根据角色进行不同的处理
+        Long id = switch (registerRequest.role()) {
+            case PASSENGER ->
+                // 如果是乘客，执行乘客的登录逻辑
+                    passengerService.register(registerRequest);
+            case DRIVER ->
+                // 如果是司机，执行司机的登录逻辑
+                    driverService.register(registerRequest);
+        };
         return Result.success(id);
     }
 

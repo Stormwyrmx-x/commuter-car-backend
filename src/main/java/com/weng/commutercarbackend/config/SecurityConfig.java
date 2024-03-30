@@ -3,8 +3,10 @@ package com.weng.commutercarbackend.config;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.weng.commutercarbackend.filter.JwtAuthenticationFilter;
-import com.weng.commutercarbackend.mapper.UserMapper;
-import com.weng.commutercarbackend.model.entity.User;
+import com.weng.commutercarbackend.mapper.DriverMapper;
+import com.weng.commutercarbackend.mapper.PassengerMapper;
+import com.weng.commutercarbackend.model.entity.Driver;
+import com.weng.commutercarbackend.model.entity.Passenger;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -37,7 +40,9 @@ public class SecurityConfig {
     @Resource
     private JwtAuthenticationFilter jwtAuthenticationFilter;
     @Resource
-    private UserMapper userMapper;
+    private DriverMapper driverMapper;
+    @Resource
+    private PassengerMapper passengerMapper;
 
     @Bean
     public AuthenticationManager authenticationManager(PasswordEncoder passwordEncoder,
@@ -70,14 +75,30 @@ public class SecurityConfig {
 
     @Bean
     public UserDetailsService userDetailsService() {
+        /**
+         * 核心代码
+         */
         return username -> {
-            LambdaQueryWrapper<User> enumUserLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            enumUserLambdaQueryWrapper.eq(User::getUsername, username);
-            User user = userMapper.selectOne(enumUserLambdaQueryWrapper);
-            if (user == null) {
+            UserDetails userDetails = null;
+            //在driver表中查找
+            LambdaQueryWrapper<Driver> driverQueryWrapper = new LambdaQueryWrapper<>();
+            driverQueryWrapper.eq(Driver::getUsername, username);
+            Driver driver = driverMapper.selectOne(driverQueryWrapper);
+            if (driver != null) {
+                userDetails = driver;
+            } else {
+                //在passenger表中查找
+                LambdaQueryWrapper<Passenger> passengerQueryWrapper = new LambdaQueryWrapper<>();
+                passengerQueryWrapper.eq(Passenger::getUsername, username);
+                Passenger passenger = passengerMapper.selectOne(passengerQueryWrapper);
+                if (passenger != null) {
+                    userDetails = passenger;
+                }
+            }
+            if (userDetails == null) {
                 throw new UsernameNotFoundException("用户名不存在");
             }
-            return user;
+            return userDetails;
         };
     }
 

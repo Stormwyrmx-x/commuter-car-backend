@@ -4,17 +4,13 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
+import com.weng.commutercarbackend.common.RoleEnum;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,16 +18,15 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * @TableName user
+ * 乘客表
+ * @TableName passenger
  */
-@TableName(value = "user")
+@TableName(value ="passenger")
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class User implements Serializable, UserDetails {
+public class Passenger implements Serializable, UserDetails {
     /**
-     *
+     * 
      */
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -57,14 +52,14 @@ public class User implements Serializable, UserDetails {
     private String phone;
 
     /**
-     * 用户角色（0是乘客，1是司机）
+     * 默认下车站点名称
      */
-    private String role;
+    private String stationName;
 
     /**
-     * 0-不在车上，1-在车上（考勤成功）
+     * 0-不在车上，1+（显示的对应司机的id，表示在哪个司机的车上）
      */
-    private Integer status;
+    private Long driverId;
 
     /**
      * 钱包余额
@@ -72,12 +67,12 @@ public class User implements Serializable, UserDetails {
     private BigDecimal money;
 
     /**
-     *
+     * 
      */
     private LocalDateTime createTime;
 
     /**
-     *
+     * 
      */
     private LocalDateTime updateTime;
 
@@ -86,32 +81,31 @@ public class User implements Serializable, UserDetails {
      */
     private Integer deleted;
 
-    @Serial
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role));
+        return List.of(new SimpleGrantedAuthority(RoleEnum.PASSENGER.name()));
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return status == 0;
+        return true;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return status == 0;
+        return true;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return status == 0;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return status == 0;
+        return true;
     }
 }
