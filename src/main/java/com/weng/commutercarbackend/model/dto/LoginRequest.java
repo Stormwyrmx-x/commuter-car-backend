@@ -1,4 +1,4 @@
-package com.weng.commutercarbackend.model.dto.auth;
+package com.weng.commutercarbackend.model.dto;
 
 import com.weng.commutercarbackend.common.RoleEnum;
 import jakarta.validation.constraints.NotBlank;

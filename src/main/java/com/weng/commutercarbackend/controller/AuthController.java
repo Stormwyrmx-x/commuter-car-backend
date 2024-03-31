@@ -1,8 +1,8 @@
 package com.weng.commutercarbackend.controller;
 
 import com.weng.commutercarbackend.common.Result;
-import com.weng.commutercarbackend.model.dto.auth.LoginRequest;
-import com.weng.commutercarbackend.model.dto.auth.RegisterRequest;
+import com.weng.commutercarbackend.model.dto.LoginRequest;
+import com.weng.commutercarbackend.model.dto.RegisterRequest;
 import com.weng.commutercarbackend.model.vo.LoginVO;
 import com.weng.commutercarbackend.service.DriverService;
 import com.weng.commutercarbackend.service.PassengerService;

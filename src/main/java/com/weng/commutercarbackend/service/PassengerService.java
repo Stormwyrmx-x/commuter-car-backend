@@ -2,8 +2,8 @@ package com.weng.commutercarbackend.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.weng.commutercarbackend.model.dto.auth.LoginRequest;
-import com.weng.commutercarbackend.model.dto.auth.RegisterRequest;
+import com.weng.commutercarbackend.model.dto.LoginRequest;
+import com.weng.commutercarbackend.model.dto.RegisterRequest;
 import com.weng.commutercarbackend.model.entity.Passenger;
 import com.weng.commutercarbackend.model.vo.LoginVO;
 
