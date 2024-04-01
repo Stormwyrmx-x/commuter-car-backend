@@ -7,8 +7,6 @@ public record LocationAddRequest(
         Double latitude,
         //经度
         Double longitude,
-        //速度:km/h
-        Double speed,
         //时间:格式为HH:mm
         String time
 ) {

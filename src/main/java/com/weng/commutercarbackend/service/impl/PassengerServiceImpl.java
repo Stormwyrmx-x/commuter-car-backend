@@ -145,14 +145,11 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         String[] driverLocationArray = driverLocation.split(",");
         double passengerLatitude = Double.parseDouble(passengerLocationArray[0]);
         double passengerLongitude = Double.parseDouble(passengerLocationArray[1]);
-        double passengerSpeed = Double.parseDouble(passengerLocationArray[2]);
         double driverLatitude = Double.parseDouble(driverLocationArray[0]);
         double driverLongitude = Double.parseDouble(driverLocationArray[1]);
-        double driverSpeed = Double.parseDouble(driverLocationArray[2]);
 
         double distance = calculateDistance(passengerLatitude, passengerLongitude, driverLatitude, driverLongitude);
-        double speedDifference = Math.abs(passengerSpeed - driverSpeed);
-        return distance < 0.1 && speedDifference < 5;
+        return distance < 0.2 ;
     }
 
     // Haversine半正矢公式 来计算地球上两点之间的距离

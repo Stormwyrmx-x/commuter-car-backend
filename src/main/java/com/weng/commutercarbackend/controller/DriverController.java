@@ -59,7 +59,7 @@ public class DriverController {
         //存储driver的位置和速度
         HashOperations<String, String, String> hashOperations = stringRedisTemplate.opsForHash();
         hashOperations.put("driver_"+driver.getId(), locationAddRequest.time(),
-                locationAddRequest.latitude()+","+locationAddRequest.longitude()+","+locationAddRequest.speed());
+                locationAddRequest.latitude()+","+locationAddRequest.longitude());
         stringRedisTemplate.expire("driver_"+driver.getId(),2, TimeUnit.HOURS);
         //判断是否到站，到站则websocket传给前端语音播报
         driverService.checkStop(driver.getId(),locationAddRequest);
