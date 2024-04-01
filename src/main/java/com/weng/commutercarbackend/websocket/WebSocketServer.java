@@ -1,5 +1,14 @@
 package com.weng.commutercarbackend.websocket;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.weng.commutercarbackend.mapper.DriverMapper;
+import com.weng.commutercarbackend.mapper.PassengerMapper;
+import com.weng.commutercarbackend.mapper.StopMapper;
+import com.weng.commutercarbackend.model.entity.Driver;
+import com.weng.commutercarbackend.model.entity.Passenger;
+import com.weng.commutercarbackend.model.entity.Stop;
+import jakarta.annotation.Resource;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
@@ -11,47 +20,86 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
 @ServerEndpoint("/ws/{sid}")
 @Slf4j
-public class WebSocketServer
-{
-    private static Map<String, Session> sessionMap=new HashMap<>();
+public class WebSocketServer {
+    private static Map<String, Session> sessionMap = new HashMap<>();
+    @Resource
+    private PassengerMapper passengerMapper;
+    @Resource
+    private StopMapper stopMapper;
+    @Resource
+    private DriverMapper driverMapper;
 
     @OnOpen
-    public void open(Session session, @PathParam(value = "sid")String sid)
-    {
-        log.info("建立连接，{}",sid);
-        sessionMap.put(sid,session);
+    public void open(Session session, @PathParam(value = "sid") String sid) {
+        log.info("建立连接，{}", sid);
+        sessionMap.put(sid, session);
     }
 
     @OnMessage
-    public void message(@PathParam(value = "sid")String sid,String message)
-    {
-        log.info("收到了消息，{}",message);
+    public void message(@PathParam(value = "sid") String sid, String message) {
+        log.info("收到了消息，{}", message);
     }
 
 
     @OnClose
-    public void close(@PathParam(value = "sid")String sid)
-    {
-        log.info("关闭连接，{}",sid);
+    public void close(@PathParam(value = "sid") String sid) {
+        // 如果是司机关闭连接，那么更改司机对应的stop表中的状态
+        if (sid.startsWith("driver_")) {
+            LambdaQueryWrapper<Driver>driverLambdaQueryWrapper=new LambdaQueryWrapper<>();
+            driverLambdaQueryWrapper.eq(Driver::getId,Integer.parseInt(sid.substring(7)));
+            Driver driver = driverMapper.selectOne(driverLambdaQueryWrapper);
+
+            LambdaUpdateWrapper<Stop> stopLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            stopLambdaUpdateWrapper.eq(Stop::getId, driver.getStopId());
+            stopLambdaUpdateWrapper.set(Stop::getChangan, 0);
+            stopLambdaUpdateWrapper.set(Stop::getGuojiyi, 0);
+            stopLambdaUpdateWrapper.set(Stop::getZiwei, 0);
+            stopLambdaUpdateWrapper.set(Stop::getGaoxin, 0);
+            stopLambdaUpdateWrapper.set(Stop::getLaodong, 0);
+            stopLambdaUpdateWrapper.set(Stop::getYouyi, 0);
+            stopLambdaUpdateWrapper.set(Stop::getUpdateTime, LocalDateTime.now());
+            stopMapper.update(stopLambdaUpdateWrapper);
+        }
+        // 如果是乘客关闭连接，那么更改乘客对应的driverId
+        else if (sid.startsWith("passenger_")) {
+            LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            passengerLambdaUpdateWrapper.eq(Passenger::getId, Integer.parseInt(sid.substring(10)));
+            passengerLambdaUpdateWrapper.set(Passenger::getDriverId, 0);
+            passengerLambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
+            passengerMapper.update(passengerLambdaUpdateWrapper);
+        }
+        else {
+            log.warn("sid格式错误，{}", sid);
+        }
+        log.info("关闭连接，{}", sid);
         sessionMap.remove(sid);
     }
 
-    public void sendToAll(String message) throws IOException
-    {
+    public void sendToAll(String message) throws IOException {
         Collection<Session> values = sessionMap.values();
-        if (!CollectionUtils.isEmpty(values))
-        {
-            for (Session value : values)
-            {
+        if (!CollectionUtils.isEmpty(values)) {
+            for (Session value : values) {
                 value.getBasicRemote().sendText(message);
             }
+        }
+    }
+
+    public void sendToUser(String sid, String message) throws IOException {
+        Session session = sessionMap.get(sid);
+        if (session != null) {
+            session.getBasicRemote().sendText(message);
+        }
+        else {
+            log.warn("No session found for sid: {}", sid);
         }
     }
 

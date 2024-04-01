@@ -42,7 +42,7 @@ CREATE TABLE `driver` (
   `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '0-正常，1-被删除',
   PRIMARY KEY (`id`),
   UNIQUE KEY `passenger_pk` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='乘客表';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='乘客表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -51,7 +51,7 @@ CREATE TABLE `driver` (
 
 LOCK TABLES `driver` WRITE;
 /*!40000 ALTER TABLE `driver` DISABLE KEYS */;
-INSERT INTO `driver` VALUES (1,'2020303390','$2a$10$MHFKJHXX/VN3b99oYaW43.dyxXll/Gnp3XeZQ10yJnlSx3IByZWja','胡世豪','13962628721',7,'2024-03-30 21:27:14','2024-03-30 21:27:14',0),(2,'2020303391','$2a$10$a3gtXcrDfnJ8cusgmRt2Vu.SnmQhiOunFGpc3ocbVU.A./lKKeJY.','胡世豪','13962628721',8,'2024-03-30 21:28:00','2024-03-30 21:28:00',0);
+INSERT INTO `driver` VALUES (1,'2020303390','$2a$10$MHFKJHXX/VN3b99oYaW43.dyxXll/Gnp3XeZQ10yJnlSx3IByZWja','胡世豪','13962628721',7,'2024-03-30 21:27:14','2024-03-30 21:27:14',0),(2,'2020303391','$2a$10$a3gtXcrDfnJ8cusgmRt2Vu.SnmQhiOunFGpc3ocbVU.A./lKKeJY.','胡世豪','13962628721',8,'2024-03-30 21:28:00','2024-03-30 21:28:00',0),(3,'2020302748','$2a$10$/pUvIgzVpZjmfI44wjvqTenIz6BQGCBjMWncD5jDo/gDFZYgMRqX2','fff','18391034600',9,'2024-04-01 10:02:57','2024-04-01 10:02:57',0);
 /*!40000 ALTER TABLE `driver` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -76,7 +76,7 @@ CREATE TABLE `passenger` (
   `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '0-正常，1-被删除',
   PRIMARY KEY (`id`),
   UNIQUE KEY `passenger_pk` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='乘客表';
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='乘客表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -85,6 +85,7 @@ CREATE TABLE `passenger` (
 
 LOCK TABLES `passenger` WRITE;
 /*!40000 ALTER TABLE `passenger` DISABLE KEYS */;
+INSERT INTO `passenger` VALUES (9,'2020302759','$2a$10$toehaMGe1lTodYl5wp6.HuxrxwDA4bn7OUy75wUXQwmxFAq2syGEa','hcy','18391032482',NULL,0,0.00,'2024-03-30 22:25:54','2024-03-30 22:25:54',0),(10,'2020302646','$2a$10$EGoks70ghIkJaRf6XgdmTeRInb9d2G75ykhBFCR4.58QSdXBZvkOG','weng','18151195179',NULL,0,0.00,'2024-03-31 17:05:13','2024-03-31 17:05:13',0);
 /*!40000 ALTER TABLE `passenger` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -98,7 +99,7 @@ DROP TABLE IF EXISTS `stop`;
 CREATE TABLE `stop` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `changan` int NOT NULL DEFAULT '0' COMMENT '长安校区下车人数',
-  `imc_xa` int NOT NULL DEFAULT '0' COMMENT '国际医下车人数',
+  `guojiyi` int NOT NULL DEFAULT '0' COMMENT '国际医下车人数',
   `ziwei` int NOT NULL DEFAULT '0' COMMENT '紫薇站下车人数',
   `gaoxin` int NOT NULL DEFAULT '0' COMMENT '高新站下车人数',
   `laodong` int NOT NULL DEFAULT '0' COMMENT '劳动南路站下车人数',
@@ -107,7 +108,7 @@ CREATE TABLE `stop` (
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `deleted` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='站点表';
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='站点表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -116,7 +117,7 @@ CREATE TABLE `stop` (
 
 LOCK TABLES `stop` WRITE;
 /*!40000 ALTER TABLE `stop` DISABLE KEYS */;
-INSERT INTO `stop` VALUES (7,0,0,0,0,0,0,'2024-03-30 13:27:14','2024-03-30 13:27:14',0),(8,0,0,0,0,0,0,'2024-03-30 13:28:00','2024-03-30 13:28:00',0);
+INSERT INTO `stop` VALUES (7,0,0,0,0,0,0,'2024-03-30 13:27:14','2024-03-30 13:27:14',0),(8,0,0,0,0,0,0,'2024-03-30 13:28:00','2024-03-30 13:28:00',0),(9,0,0,0,0,0,0,'2024-04-01 02:02:57','2024-04-01 02:02:57',0);
 /*!40000 ALTER TABLE `stop` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -129,4 +130,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-03-30 21:39:32
+-- Dump completed on 2024-04-01 15:40:18

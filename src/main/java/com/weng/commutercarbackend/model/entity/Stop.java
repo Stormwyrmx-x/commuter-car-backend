@@ -30,7 +30,7 @@ public class Stop implements Serializable {
     /**
      * 国际医下车人数
      */
-    private Integer imcXa;
+    private Integer guojiyi;
 
     /**
      * 紫薇站下车人数

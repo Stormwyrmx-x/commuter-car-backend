@@ -7,6 +7,7 @@ import com.weng.commutercarbackend.common.ResultCodeEnum;
 import com.weng.commutercarbackend.exception.BusinessException;
 import com.weng.commutercarbackend.mapper.DriverMapper;
 import com.weng.commutercarbackend.mapper.StopMapper;
+import com.weng.commutercarbackend.model.dto.LocationAddRequest;
 import com.weng.commutercarbackend.model.dto.LoginRequest;
 import com.weng.commutercarbackend.model.dto.RegisterRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
@@ -14,15 +15,20 @@ import com.weng.commutercarbackend.model.entity.Stop;
 import com.weng.commutercarbackend.model.vo.LoginVO;
 import com.weng.commutercarbackend.service.DriverService;
 import com.weng.commutercarbackend.utils.JwtUtil;
+import com.weng.commutercarbackend.websocket.WebSocketServer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -41,7 +47,17 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final WebSocketServer webSocketServer;
     private final Gson gson;
+    private final double[][] stops = {
+            {34.028930, 108.764328}, // changan
+            {34.145423, 108.838777}, // guojiyi
+            {34.175846, 108.871443}, // ziwei
+            {34.223366, 108.899247}, // gaoxin
+            {34.240884,108.910038},  // laodong
+            {34.243687, 108.915419}  // youyi
+    };
+    private final String[] stopNames = {"changan", "guojiyi", "ziwei", "gaoxin", "laodong", "youyi"};
 
     @Override
     public LoginVO login(LoginRequest loginRequest) {
@@ -89,6 +105,36 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
 
         return driver.getId();
     }
+
+    @Override
+    public void checkStop(Long id, LocationAddRequest locationAddRequest) throws IOException {
+        for (int i = 0; i < stops.length; i++) {
+            double distance = calculateDistance(locationAddRequest.latitude(), locationAddRequest.longitude(),
+                    stops[i][0], stops[i][1]);
+            if (distance < 1) {
+                // If the distance is less than 1km, send a message to the front end via WebSocket
+                Map<String,Object> map=new HashMap<>();
+                map.put("type", 2);//消息类型，2表示语音提醒
+                map.put("message", "前端到站：" + stopNames[i]);
+                webSocketServer.sendToUser("driver_"+id,gson.toJson(map));
+                break;
+            }
+        }
+    }
+
+    // Haversine半正矢公式 来计算地球上两点之间的距离
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        int R = 6371; // Radius of the earth in km
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+
 }
 
 

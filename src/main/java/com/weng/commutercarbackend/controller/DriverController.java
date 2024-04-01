@@ -14,7 +14,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/driver")
@@ -37,7 +39,7 @@ public class DriverController {
         StopVO stopVO = StopVO.builder()
                 .id(stop.getId())
                 .changan(stop.getChangan())
-                .imcXa(stop.getImcXa())
+                .guojiyi(stop.getGuojiyi())
                 .ziwei(stop.getZiwei())
                 .gaoxin(stop.getGaoxin())
                 .laodong(stop.getLaodong())
@@ -48,22 +50,19 @@ public class DriverController {
 
     /**
      * 每分钟上传司机当前位置，如果靠近站点，则给前端websocket语音播报提醒。
-     * 如果到达终点站，则清空对应的stop表
      * @param locationAddRequest
      * @return
      */
     @PostMapping("/location")
     public Result<Boolean> addLocation(@RequestBody @Validated LocationAddRequest locationAddRequest,
-                                       @AuthenticationPrincipal Driver driver) {
+                                       @AuthenticationPrincipal Driver driver) throws IOException {
         //存储driver的位置和速度
         HashOperations<String, String, String> hashOperations = stringRedisTemplate.opsForHash();
-        hashOperations.put("driver"+driver.getId(),
-                LocalDateTime.now().getHour() +":"+LocalDateTime.now().getMinute()+":"+LocalDateTime.now().getSecond(),
-                locationAddRequest.longitude()+","+locationAddRequest.latitude()+","+locationAddRequest.speed());
-        //判断是否到站
-
-
-
+        hashOperations.put("driver_"+driver.getId(), locationAddRequest.time(),
+                locationAddRequest.latitude()+","+locationAddRequest.longitude()+","+locationAddRequest.speed());
+        stringRedisTemplate.expire("driver_"+driver.getId(),2, TimeUnit.HOURS);
+        //判断是否到站，到站则websocket传给前端语音播报
+        driverService.checkStop(driver.getId(),locationAddRequest);
         return Result.success(true);
     }
 

@@ -15,7 +15,7 @@ public record StopVO(
         /**
          * 国际医下车人数
          */
-         Integer imcXa,
+         Integer guojiyi,
 
         /**
          * 紫薇站下车人数
