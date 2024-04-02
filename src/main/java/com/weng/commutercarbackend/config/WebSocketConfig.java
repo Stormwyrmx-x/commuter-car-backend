@@ -1,5 +1,6 @@
 package com.weng.commutercarbackend.config;
 
+import com.weng.commutercarbackend.mapper.StopMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
@@ -8,9 +9,7 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 public class WebSocketConfig
 {
     @Bean
-    public ServerEndpointExporter serverEndpointExporter()
-    {
+    public ServerEndpointExporter serverEndpointExporter() {
         return new ServerEndpointExporter();
     }
-
 }

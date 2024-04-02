@@ -18,6 +18,9 @@ import com.weng.commutercarbackend.utils.JwtUtil;
 import com.weng.commutercarbackend.websocket.WebSocketServer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -30,6 +33,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
 * @author weng
@@ -48,6 +52,7 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final WebSocketServer webSocketServer;
+    private final StringRedisTemplate stringRedisTemplate;
     private final Gson gson;
     private final double[][] stops = {
             {34.028930, 108.764328}, // changan
@@ -57,7 +62,14 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
             {34.240884,108.910038},  // laodong
             {34.243687, 108.915419}  // youyi
     };
-    private final String[] stopNames = {"changan", "guojiyi", "ziwei", "gaoxin", "laodong", "youyi"};
+    private final String[][] stopNames = {
+            {"changan","长安校区"},
+            {"guojiyi","国际医学中心"},
+            {"ziwei","紫薇站"},
+            {"gaoxin","高新站"},
+            {"laodong","劳动路站"},
+            {"youyi","友谊校区"}
+    };
 
     @Override
     public LoginVO login(LoginRequest loginRequest) {
@@ -112,11 +124,20 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
             double distance = calculateDistance(locationAddRequest.latitude(), locationAddRequest.longitude(),
                     stops[i][0], stops[i][1]);
             if (distance < 1) {
-                // If the distance is less than 1km, send a message to the front end via WebSocket
-                Map<String,Object> map=new HashMap<>();
-                map.put("type", 2);//消息类型，2表示语音提醒
-                map.put("message", "前端到站：" + stopNames[i]);
-                webSocketServer.sendToUser("driver_"+id,gson.toJson(map));
+                // If the distance is less than 1km, check if the driver has already arrived at the stop
+                //如果已经语音播报过了，则2小时内到达站点不再播报
+                HashOperations<String, String, String> hashOperations = stringRedisTemplate.opsForHash();
+                if(hashOperations.get("driver_"+id,stopNames[i][0])==null){
+                    //send a message to the front end via WebSocket
+                    Map<String,Object> map=new HashMap<>();
+                    map.put("type", 2);//消息类型，2表示语音提醒
+                    map.put("message", "前端到站：" + stopNames[i][1]);
+                    webSocketServer.sendToUser("driver_"+id,gson.toJson(map));
+
+                    //store the stop name in redis
+                    hashOperations.put("driver_"+id,stopNames[i][0],"-");
+                    stringRedisTemplate.expire("driver_"+id,2, TimeUnit.HOURS);
+                }
                 break;
             }
         }

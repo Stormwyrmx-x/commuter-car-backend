@@ -16,6 +16,7 @@ import jakarta.websocket.Session;
 import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -31,12 +32,22 @@ import java.util.Map;
 @Slf4j
 public class WebSocketServer {
     private static Map<String, Session> sessionMap = new HashMap<>();
-    @Resource
-    private PassengerMapper passengerMapper;
-    @Resource
-    private StopMapper stopMapper;
-    @Resource
-    private DriverMapper driverMapper;
+    private static PassengerMapper passengerMapper;
+    private static StopMapper stopMapper;
+    private static DriverMapper driverMapper;
+
+    @Autowired
+    public void setPassengerMapper(PassengerMapper passengerMapper) {
+        WebSocketServer.passengerMapper = passengerMapper;
+    }
+    @Autowired
+    public void setStopMapper(StopMapper stopMapper) {
+        WebSocketServer.stopMapper = stopMapper;
+    }
+    @Autowired
+    public void setDriverMapper(DriverMapper driverMapper) {
+        WebSocketServer.driverMapper = driverMapper;
+    }
 
     @OnOpen
     public void open(Session session, @PathParam(value = "sid") String sid) {
@@ -53,33 +64,33 @@ public class WebSocketServer {
     @OnClose
     public void close(@PathParam(value = "sid") String sid) {
         // 如果是司机关闭连接，那么更改司机对应的stop表中的状态
-//        if (sid.startsWith("driver_")) {
-//            LambdaQueryWrapper<Driver>driverLambdaQueryWrapper=new LambdaQueryWrapper<>();
-//            driverLambdaQueryWrapper.eq(Driver::getId,Integer.parseInt(sid.substring(7)));
-//            Driver driver = driverMapper.selectOne(driverLambdaQueryWrapper);
-//
-//            LambdaUpdateWrapper<Stop> stopLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-//            stopLambdaUpdateWrapper.eq(Stop::getId, driver.getStopId());
-//            stopLambdaUpdateWrapper.set(Stop::getChangan, 0);
-//            stopLambdaUpdateWrapper.set(Stop::getGuojiyi, 0);
-//            stopLambdaUpdateWrapper.set(Stop::getZiwei, 0);
-//            stopLambdaUpdateWrapper.set(Stop::getGaoxin, 0);
-//            stopLambdaUpdateWrapper.set(Stop::getLaodong, 0);
-//            stopLambdaUpdateWrapper.set(Stop::getYouyi, 0);
-//            stopLambdaUpdateWrapper.set(Stop::getUpdateTime, LocalDateTime.now());
-//            stopMapper.update(stopLambdaUpdateWrapper);
-//        }
+        if (sid.startsWith("driver_")) {
+            LambdaQueryWrapper<Driver>driverLambdaQueryWrapper=new LambdaQueryWrapper<>();
+            driverLambdaQueryWrapper.eq(Driver::getId,Integer.parseInt(sid.substring(7)));
+            Driver driver = driverMapper.selectOne(driverLambdaQueryWrapper);
+
+            LambdaUpdateWrapper<Stop> stopLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            stopLambdaUpdateWrapper.eq(Stop::getId, driver.getStopId());
+            stopLambdaUpdateWrapper.set(Stop::getChangan, 0);
+            stopLambdaUpdateWrapper.set(Stop::getGuojiyi, 0);
+            stopLambdaUpdateWrapper.set(Stop::getZiwei, 0);
+            stopLambdaUpdateWrapper.set(Stop::getGaoxin, 0);
+            stopLambdaUpdateWrapper.set(Stop::getLaodong, 0);
+            stopLambdaUpdateWrapper.set(Stop::getYouyi, 0);
+            stopLambdaUpdateWrapper.set(Stop::getUpdateTime, LocalDateTime.now());
+            stopMapper.update(stopLambdaUpdateWrapper);
+        }
         // 如果是乘客关闭连接，那么更改乘客对应的driverId
-//        else if (sid.startsWith("passenger_")) {
-//            LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-//            passengerLambdaUpdateWrapper.eq(Passenger::getId, Integer.parseInt(sid.substring(10)));
-//            passengerLambdaUpdateWrapper.set(Passenger::getDriverId, 0);
-//            passengerLambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
-//            passengerMapper.update(passengerLambdaUpdateWrapper);
-//        }
-//        else {
-//            log.warn("sid格式错误，{}", sid);
-//        }
+        else if (sid.startsWith("passenger_")) {
+            LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            passengerLambdaUpdateWrapper.eq(Passenger::getId, Integer.parseInt(sid.substring(10)));
+            passengerLambdaUpdateWrapper.set(Passenger::getDriverId, 0);
+            passengerLambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
+            passengerMapper.update(passengerLambdaUpdateWrapper);
+        }
+        else {
+            log.warn("sid格式错误，{}", sid);
+        }
         log.info("关闭连接，{}", sid);
         sessionMap.remove(sid);
     }

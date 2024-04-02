@@ -1,8 +1,13 @@
 package com.weng.commutercarbackend.stop;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
+import com.weng.commutercarbackend.mapper.DriverMapper;
+import com.weng.commutercarbackend.mapper.PassengerMapper;
 import com.weng.commutercarbackend.mapper.StopMapper;
+import com.weng.commutercarbackend.model.entity.Driver;
+import com.weng.commutercarbackend.model.entity.Passenger;
 import com.weng.commutercarbackend.model.entity.Stop;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
@@ -10,6 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,21 +25,38 @@ public class StopTest {
 
     @Resource
     private StopMapper stopMapper;
-
+    @Resource
+    private DriverMapper driverMapper;
+    @Resource
+    private PassengerMapper passengerMapper;
     @Resource
     private Gson gson;
 
     @Test
     public void testClearStop() {
-        LambdaUpdateWrapper<Stop> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        lambdaUpdateWrapper.set(Stop::getChangan,0);
-        lambdaUpdateWrapper.set(Stop::getGuojiyi,0);
-        lambdaUpdateWrapper.set(Stop::getZiwei,0);
-        lambdaUpdateWrapper.set(Stop::getGaoxin,0);
-        lambdaUpdateWrapper.set(Stop::getLaodong,0);
-        lambdaUpdateWrapper.set(Stop::getYouyi,0);
-        stopMapper.update(lambdaUpdateWrapper);
+        LambdaQueryWrapper<Driver>driverLambdaQueryWrapper=new LambdaQueryWrapper<>();
+        driverLambdaQueryWrapper.eq(Driver::getId,1);
+        Driver driver = driverMapper.selectOne(driverLambdaQueryWrapper);
 
+        LambdaUpdateWrapper<Stop> stopLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        stopLambdaUpdateWrapper.eq(Stop::getId, driver.getStopId());
+        stopLambdaUpdateWrapper.set(Stop::getChangan, 0);
+        stopLambdaUpdateWrapper.set(Stop::getGuojiyi, 0);
+        stopLambdaUpdateWrapper.set(Stop::getZiwei, 0);
+        stopLambdaUpdateWrapper.set(Stop::getGaoxin, 0);
+        stopLambdaUpdateWrapper.set(Stop::getLaodong, 0);
+        stopLambdaUpdateWrapper.set(Stop::getYouyi, 0);
+        stopLambdaUpdateWrapper.set(Stop::getUpdateTime, LocalDateTime.now());
+        stopMapper.update(stopLambdaUpdateWrapper);
+    }
+
+    @Test
+    public void testClearStatus(){
+        LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        passengerLambdaUpdateWrapper.eq(Passenger::getId, 9);
+        passengerLambdaUpdateWrapper.set(Passenger::getDriverId, 0);
+        passengerLambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
+        passengerMapper.update(passengerLambdaUpdateWrapper);
     }
 
     @Test
@@ -59,6 +82,12 @@ public class StopTest {
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         System.out.println(R * c);
+    }
+
+    @Test
+    public void testSubString(){
+        System.out.println(Integer.parseInt("driver_2".substring(7)));
+        System.out.println(Integer.parseInt("passenger_9".substring(10)));
     }
 
 }

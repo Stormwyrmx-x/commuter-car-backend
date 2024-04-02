@@ -58,6 +58,7 @@ public class PassengerController {
         HashOperations<String, String, String> hashOperations = stringRedisTemplate.opsForHash();
         hashOperations.put("passenger_"+passenger.getId(),locationAddRequest.time(),
                 locationAddRequest.latitude()+","+locationAddRequest.longitude());
+        //应该先存储数据，然后再设置过期时间
         stringRedisTemplate.expire("passenger_"+passenger.getId(),2, TimeUnit.HOURS);
         //判断是否已经上传有10次且乘客的状态为0，如果有则拿乘客的数据和司机的数据进行比对
         //如果匹配成功则向前端传递数据，如果不成功则不传

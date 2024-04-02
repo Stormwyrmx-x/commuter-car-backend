@@ -69,7 +69,7 @@ CREATE TABLE `passenger` (
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户姓名',
   `phone` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '电话号',
   `station_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '默认下车站点名称',
-  `driver_id` bigint NOT NULL DEFAULT '0' COMMENT '0-不在车上，1+（显示的对应司机的id，表示在哪个司机的车上）',
+  `driver_id` bigint NOT NULL DEFAULT '0' COMMENT '乘客状态：0-不在车上，1+（显示的对应司机的id，表示在哪个司机的车上）',
   `money` decimal(9,2) NOT NULL DEFAULT '0.00' COMMENT '钱包余额',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -130,4 +130,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-01 15:40:18
+-- Dump completed on 2024-04-02  1:03:32
