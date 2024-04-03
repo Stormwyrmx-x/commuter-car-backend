@@ -8,12 +8,14 @@ import com.weng.commutercarbackend.common.ResultCodeEnum;
 import com.weng.commutercarbackend.exception.BusinessException;
 import com.weng.commutercarbackend.mapper.DriverMapper;
 import com.weng.commutercarbackend.mapper.PassengerMapper;
+import com.weng.commutercarbackend.mapper.StopMapper;
 import com.weng.commutercarbackend.model.dto.LoginRequest;
 import com.weng.commutercarbackend.model.dto.RegisterRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
 import com.weng.commutercarbackend.model.entity.Passenger;
 import com.weng.commutercarbackend.model.entity.Stop;
 import com.weng.commutercarbackend.model.vo.LoginVO;
+import com.weng.commutercarbackend.model.vo.StopVO;
 import com.weng.commutercarbackend.service.PassengerService;
 import com.weng.commutercarbackend.utils.JwtUtil;
 import com.weng.commutercarbackend.websocket.WebSocketServer;
@@ -50,6 +52,7 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
     private final StringRedisTemplate stringRedisTemplate;
     private final WebSocketServer webSocketServer;
     private final Gson gson;
+    private final StopMapper stopMapper;
 
     @Override
     public LoginVO login(LoginRequest loginRequest) {
@@ -96,6 +99,83 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         return passenger.getId();
     }
 
+    @Override
+    public void updateStationName(Passenger passenger, String stationName) throws IOException {
+        Long stopId = driverMapper.selectById(passenger.getDriverId()).getStopId();
+        Stop stop = stopMapper.selectById(stopId);
+        LambdaUpdateWrapper<Stop> stopLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        stopLambdaUpdateWrapper.eq(Stop::getId,stopId);
+        //如果passenger原来已有stationName，则要将原来的站点人数减1
+        if (passenger.getStationName()!=null){
+            switch (passenger.getStationName()){
+                case "changan":
+                    stopLambdaUpdateWrapper.set(Stop::getChangan,stop.getChangan()-1);
+                    break;
+                case "guojiyi":
+                    stopLambdaUpdateWrapper.set(Stop::getGuojiyi,stop.getGuojiyi()-1);
+                    break;
+                case "ziwei":
+                    stopLambdaUpdateWrapper.set(Stop::getZiwei,stop.getZiwei()-1);
+                    break;
+                case "gaoxin":
+                    stopLambdaUpdateWrapper.set(Stop::getGaoxin,stop.getGaoxin()-1);
+                    break;
+                case "laodong":
+                    stopLambdaUpdateWrapper.set(Stop::getLaodong,stop.getLaodong()-1);
+                    break;
+                case "youyi":
+                    stopLambdaUpdateWrapper.set(Stop::getYouyi,stop.getYouyi()-1);
+                    break;
+            }
+            stopLambdaUpdateWrapper.set(Stop::getUpdateTime,LocalDateTime.now());
+            stopMapper.update(stopLambdaUpdateWrapper);
+        }
+        //修改passenger表中的stationName
+        LambdaUpdateWrapper<Passenger>passengerLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
+        passengerLambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
+                .set(Passenger::getStationName,stationName)
+                .set(Passenger::getUpdateTime, LocalDateTime.now());
+        passengerMapper.update(passengerLambdaUpdateWrapper);
+        //修改passenger乘坐的司机对应的stop表，将对应站点人数加1
+        switch (stationName){
+            case "changan":
+                stopLambdaUpdateWrapper.set(Stop::getChangan,stop.getChangan()+1);
+                break;
+            case "guojiyi":
+                stopLambdaUpdateWrapper.set(Stop::getGuojiyi,stop.getGuojiyi()+1);
+                break;
+            case "ziwei":
+                stopLambdaUpdateWrapper.set(Stop::getZiwei,stop.getZiwei()+1);
+                break;
+            case "gaoxin":
+                stopLambdaUpdateWrapper.set(Stop::getGaoxin,stop.getGaoxin()+1);
+                break;
+            case "laodong":
+                stopLambdaUpdateWrapper.set(Stop::getLaodong,stop.getLaodong()+1);
+                break;
+            case "youyi":
+                stopLambdaUpdateWrapper.set(Stop::getYouyi,stop.getYouyi()+1);
+                break;
+        }
+        stopLambdaUpdateWrapper.set(Stop::getUpdateTime,LocalDateTime.now());
+        stopMapper.update(stopLambdaUpdateWrapper);
+        stop = stopMapper.selectById(stopId);
+        //websocket传递给司机端Stop表的修改后的信息
+        StopVO stopVO = StopVO.builder()
+                .id(stop.getId())
+                .changan(stop.getChangan())
+                .guojiyi(stop.getGuojiyi())
+                .ziwei(stop.getZiwei())
+                .gaoxin(stop.getGaoxin())
+                .laodong(stop.getLaodong())
+                .youyi(stop.getYouyi())
+                .build();
+        Map<String,Object> map=new HashMap<>();
+        map.put("type", 3);//消息类型，1表示人车拟合成功
+        map.put("message", stopVO);
+        webSocketServer.sendToUser("driver_"+passenger.getDriverId(),gson.toJson(map));
+    }
+
     /**
      * todo 核心代码：人车拟合
      * @param id
@@ -139,6 +219,8 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
             }
         }
     }
+
+
 
     private Boolean compare(String passengerLocation, String driverLocation) {
         String[] passengerLocationArray = passengerLocation.split(",");

@@ -38,6 +38,7 @@ public class StopTask {
 
         LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         passengerLambdaUpdateWrapper.set(Passenger::getDriverId,0);
+        passengerLambdaUpdateWrapper.set(Passenger::getStationName,null);
         passengerLambdaUpdateWrapper.set(Passenger::getUpdateTime,LocalDateTime.now());
         passengerMapper.update(passengerLambdaUpdateWrapper);
     }

@@ -1,13 +1,17 @@
 package com.weng.commutercarbackend.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.weng.commutercarbackend.common.Result;
+import com.weng.commutercarbackend.common.ResultCodeEnum;
 import com.weng.commutercarbackend.model.dto.LocationAddRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
 import com.weng.commutercarbackend.model.entity.Passenger;
 import com.weng.commutercarbackend.model.vo.PassengerVO;
 import com.weng.commutercarbackend.model.vo.StopVO;
+import com.weng.commutercarbackend.service.DriverService;
 import com.weng.commutercarbackend.service.PassengerService;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -25,10 +29,11 @@ import java.util.concurrent.TimeUnit;
 public class PassengerController {
 
     private final PassengerService passengerService;
+    private final DriverService driverService;
     private final StringRedisTemplate stringRedisTemplate;
 
     /**
-     * 获取当前登录乘客信息
+     * 获取当前登录乘客信息，包括了默认下车站点，当前余额，当前司机id
      * @param passenger
      * @return
      */
@@ -45,6 +50,26 @@ public class PassengerController {
                 .build();
         return Result.success(passengerVO);
     }
+
+
+    /**
+     * 乘客选择/修改下车地点
+     * @param stationName
+     * @param passenger
+     * @return
+     */
+    @PutMapping("/stationName")
+    public Result<Boolean>updateStationName(@NotBlank String stationName, @AuthenticationPrincipal Passenger passenger) throws IOException {
+        boolean result;
+        //如果乘客还未监测在车上，就不能选择下车地点
+        if (passenger.getDriverId()==0){
+            Result.error(ResultCodeEnum.FORBIDDEN_ERROR,"系统尚未监测您在车上，请耐心等待");
+        }else {
+            passengerService.updateStationName(passenger,stationName);
+        }
+        return Result.success(true);
+    }
+
 
     /**
      * 每分钟上传乘客当前位置
@@ -67,5 +92,7 @@ public class PassengerController {
         }
         return Result.success(true);
     }
+
+
 
 }

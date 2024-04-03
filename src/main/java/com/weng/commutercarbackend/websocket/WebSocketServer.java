@@ -80,11 +80,12 @@ public class WebSocketServer {
             stopLambdaUpdateWrapper.set(Stop::getUpdateTime, LocalDateTime.now());
             stopMapper.update(stopLambdaUpdateWrapper);
         }
-        // 如果是乘客关闭连接，那么更改乘客对应的driverId
+        // 如果是乘客关闭连接，那么更改乘客对应的driverId，清除stationName
         else if (sid.startsWith("passenger_")) {
             LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             passengerLambdaUpdateWrapper.eq(Passenger::getId, Integer.parseInt(sid.substring(10)));
             passengerLambdaUpdateWrapper.set(Passenger::getDriverId, 0);
+            passengerLambdaUpdateWrapper.set(Passenger::getStationName, null);
             passengerLambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
             passengerMapper.update(passengerLambdaUpdateWrapper);
         }
