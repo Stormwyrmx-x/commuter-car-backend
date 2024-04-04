@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,11 +30,13 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/passenger")
 @RequiredArgsConstructor
+@Validated
 public class PassengerController {
 
     private final PassengerService passengerService;
     private final DriverService driverService;
     private final StringRedisTemplate stringRedisTemplate;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 获取当前登录乘客信息，包括了默认下车站点，当前余额，当前司机id
@@ -96,6 +99,12 @@ public class PassengerController {
         return Result.success(true);
     }
 
+    /**
+     * 修改余额
+     * @param money
+     * @param passenger
+     * @return
+     */
     @PutMapping("/payment")
     public Result<BigDecimal> payment(@NotNull @Min(0) BigDecimal money, @AuthenticationPrincipal Passenger passenger){
         //乘客支付
@@ -103,5 +112,19 @@ public class PassengerController {
         return Result.success(passenger.getMoney().add(money));
     }
 
+    /**
+     * 修改密码
+     * @param password
+     * @param passenger
+     * @return
+     */
+    @PutMapping("/password")
+    public Result<Boolean> changePassword(@NotBlank String password, @AuthenticationPrincipal Passenger passenger){
+        LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        passengerLambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
+                .set(Passenger::getPassword,passwordEncoder.encode(password));
+        boolean result = passengerService.update(passengerLambdaUpdateWrapper);
+        return Result.success(result);
+    }
 
 }

@@ -1,16 +1,20 @@
 package com.weng.commutercarbackend.controller;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.weng.commutercarbackend.common.Result;
 import com.weng.commutercarbackend.mapper.StopMapper;
 import com.weng.commutercarbackend.model.dto.LocationAddRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
+import com.weng.commutercarbackend.model.entity.Passenger;
 import com.weng.commutercarbackend.model.entity.Stop;
 import com.weng.commutercarbackend.model.vo.StopVO;
 import com.weng.commutercarbackend.service.DriverService;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,11 +25,13 @@ import java.util.concurrent.TimeUnit;
 @RestController
 @RequestMapping("/driver")
 @RequiredArgsConstructor
+@Validated
 public class DriverController {
 
     private final DriverService driverService;
     private final StopMapper stopMapper;
     private final StringRedisTemplate stringRedisTemplate;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 获取当前登录司机的停靠点
@@ -66,5 +72,19 @@ public class DriverController {
         return Result.success(true);
     }
 
+    /**
+     * 修改密码
+     * @param password
+     * @param driver
+     * @return
+     */
+    @PutMapping("/password")
+    public Result<Boolean> changePassword(@NotBlank String password, @AuthenticationPrincipal Driver driver){
+        LambdaUpdateWrapper<Driver> driverLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        driverLambdaUpdateWrapper.eq(Driver::getId,driver.getId())
+                .set(Driver::getPassword,passwordEncoder.encode(password));
+        boolean result = driverService.update(driverLambdaUpdateWrapper);
+        return Result.success(result);
+    }
 
 }

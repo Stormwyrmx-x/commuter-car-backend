@@ -60,7 +60,10 @@ public class WebSocketServer {
         log.info("收到了消息，{}", message);
     }
 
-
+    /**
+     * 司机/乘客退出登录
+     * @param sid
+     */
     @OnClose
     public void close(@PathParam(value = "sid") String sid) {
         // 如果是司机关闭连接，那么更改司机对应的stop表中的状态
