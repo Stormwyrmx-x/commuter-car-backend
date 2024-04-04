@@ -11,7 +11,9 @@ import com.weng.commutercarbackend.model.vo.PassengerVO;
 import com.weng.commutercarbackend.model.vo.StopVO;
 import com.weng.commutercarbackend.service.DriverService;
 import com.weng.commutercarbackend.service.PassengerService;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -20,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
@@ -93,6 +96,12 @@ public class PassengerController {
         return Result.success(true);
     }
 
+    @PutMapping("/payment")
+    public Result<BigDecimal> payment(@NotNull @Min(0) BigDecimal money, @AuthenticationPrincipal Passenger passenger){
+        //乘客支付
+        passengerService.payment(money,passenger);
+        return Result.success(passenger.getMoney().add(money));
+    }
 
 
 }

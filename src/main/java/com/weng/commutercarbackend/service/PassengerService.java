@@ -8,6 +8,7 @@ import com.weng.commutercarbackend.model.entity.Passenger;
 import com.weng.commutercarbackend.model.vo.LoginVO;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
 /**
 * @author weng
@@ -22,4 +23,6 @@ public interface PassengerService extends IService<Passenger> {
     void compareLocation(Long id) throws IOException;
 
     void updateStationName(Passenger passenger, String stationName) throws IOException;
+
+    void payment(BigDecimal money, Passenger passenger);
 }

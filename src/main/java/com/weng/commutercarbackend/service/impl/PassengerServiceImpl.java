@@ -30,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -139,6 +140,7 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         //修改passenger乘坐的司机对应的stop表，将对应站点人数加1
         switch (stationName){
             case "changan":
+//                stopLambdaUpdateWrapper.setSql("changan = changan + 1");
                 stopLambdaUpdateWrapper.set(Stop::getChangan,stop.getChangan()+1);
                 break;
             case "guojiyi":
@@ -174,6 +176,15 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         map.put("type", 3);//消息类型，1表示人车拟合成功
         map.put("message", stopVO);
         webSocketServer.sendToUser("driver_"+passenger.getDriverId(),gson.toJson(map));
+    }
+
+    @Override
+    public void payment(BigDecimal money, Passenger passenger) {
+        LambdaUpdateWrapper<Passenger> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(Passenger::getId,passenger.getId());
+        lambdaUpdateWrapper.setSql("money = money + "+money);
+        lambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
+        passengerMapper.update(lambdaUpdateWrapper);
     }
 
     /**
