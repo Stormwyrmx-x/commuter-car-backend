@@ -217,7 +217,7 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         for (Driver driver : drivers) {
             //3.获取当前遍历司机的时间
             Set<String> driverTimes = hashOperations.keys("driver_" + driver.getId());
-            //4.比对,如果10次都比对成功,则匹配成功
+            //4.比对,如果10次以上比对成功,则匹配成功
             int count=0;
             for (String passengerTime : passengerTimes) {
                 for (String driverTime : driverTimes) {
@@ -228,11 +228,12 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
                         if (result) {
                             count++;
                         }
+                        break;
                     }
                 }
             }
-            //5.如果匹配成功,则向前端传递数据。并进行考勤和扣费
-            if (count==10){
+            //5.如果匹配成功(累计一个司机有10次数据和此乘客相同),则向前端传递数据。并进行考勤和扣费
+            if (count>=10){
                 Map<String,Object> map=new HashMap<>();
                 map.put("type", 1);//消息类型，1表示人车拟合成功
                 map.put("message", "系统检测您已在车上,按确定进行考勤和扣费");
@@ -243,6 +244,7 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
                 lambdaUpdateWrapper.setSql("money = money - 5");
                 lambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
                 passengerMapper.update(lambdaUpdateWrapper);
+                break;
             }
         }
     }

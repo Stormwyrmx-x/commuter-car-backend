@@ -92,9 +92,10 @@ public class PassengerController {
                 locationAddRequest.latitude()+","+locationAddRequest.longitude());
         //应该先存储数据，然后再设置过期时间
         stringRedisTemplate.expire("passenger_"+passenger.getId(),2, TimeUnit.HOURS);
-        //判断是否已经上传有10次且乘客的状态为0，如果有则拿乘客的数据和司机的数据进行比对
+
+        //如果乘客的状态为0且乘客已上传数据大于10，则拿乘客的数据和司机的数据进行比对
         //如果匹配成功则向前端传递数据，如果不成功则不传
-        if (hashOperations.keys("passenger_"+passenger.getId()).size() >= 10 && passenger.getDriverId()==0){
+        if (hashOperations.keys("passenger_"+passenger.getId()).size()>=10&&passenger.getDriverId()==0){
             passengerService.compareLocation(passenger.getId());
         }
         return Result.success(true);
