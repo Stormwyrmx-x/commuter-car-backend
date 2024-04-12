@@ -240,6 +240,7 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
                 webSocketServer.sendToUser("passenger_"+id,gson.toJson(map));
                 //考勤和扣费
                 LambdaUpdateWrapper<Passenger> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                lambdaUpdateWrapper.eq(Passenger::getId,id);
                 lambdaUpdateWrapper.set(Passenger::getDriverId,driver.getId());
                 lambdaUpdateWrapper.setSql("money = money - 5");
                 lambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
