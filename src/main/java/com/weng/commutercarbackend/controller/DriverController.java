@@ -36,6 +36,7 @@ public class DriverController {
     private final StringRedisTemplate stringRedisTemplate;
     private final PasswordEncoder passwordEncoder;
 
+
     /**
      * 获取当前登录司机信息，
      * @param driver

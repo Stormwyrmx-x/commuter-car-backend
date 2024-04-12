@@ -17,6 +17,7 @@ import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -35,6 +36,7 @@ public class WebSocketServer {
     private static PassengerMapper passengerMapper;
     private static StopMapper stopMapper;
     private static DriverMapper driverMapper;
+    private static StringRedisTemplate stringRedisTemplate;
 
     @Autowired
     public void setPassengerMapper(PassengerMapper passengerMapper) {
@@ -47,6 +49,10 @@ public class WebSocketServer {
     @Autowired
     public void setDriverMapper(DriverMapper driverMapper) {
         WebSocketServer.driverMapper = driverMapper;
+    }
+    @Autowired
+    public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
+        WebSocketServer.stringRedisTemplate = stringRedisTemplate;
     }
 
     @OnOpen
@@ -66,7 +72,7 @@ public class WebSocketServer {
      */
     @OnClose
     public void close(@PathParam(value = "sid") String sid) {
-        // 如果是司机关闭连接，那么更改司机对应的stop表中的状态
+        // 如果是司机关闭连接，那么更改司机对应的stop表中的状态。同时清空redis表
         if (sid.startsWith("driver_")) {
             LambdaQueryWrapper<Driver>driverLambdaQueryWrapper=new LambdaQueryWrapper<>();
             driverLambdaQueryWrapper.eq(Driver::getId,Integer.parseInt(sid.substring(7)));
@@ -82,8 +88,10 @@ public class WebSocketServer {
             stopLambdaUpdateWrapper.set(Stop::getYouyi, 0);
             stopLambdaUpdateWrapper.set(Stop::getUpdateTime, LocalDateTime.now());
             stopMapper.update(stopLambdaUpdateWrapper);
+
+            stringRedisTemplate.delete(sid);
         }
-        // 如果是乘客关闭连接，那么更改乘客对应的driverId，清除stationName
+        // 如果是乘客关闭连接，那么更改乘客对应的driverId，清除stationName。同时清空redis表
         else if (sid.startsWith("passenger_")) {
             LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             passengerLambdaUpdateWrapper.eq(Passenger::getId, Integer.parseInt(sid.substring(10)));
@@ -91,6 +99,8 @@ public class WebSocketServer {
             passengerLambdaUpdateWrapper.set(Passenger::getStationName, null);
             passengerLambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
             passengerMapper.update(passengerLambdaUpdateWrapper);
+
+            stringRedisTemplate.delete(sid);
         }
         else {
             log.warn("sid格式错误，{}", sid);
