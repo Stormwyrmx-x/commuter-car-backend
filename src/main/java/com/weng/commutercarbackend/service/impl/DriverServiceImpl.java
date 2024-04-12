@@ -135,7 +135,7 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
                     //send a message to the front end via WebSocket
                     Map<String,Object> map=new HashMap<>();
                     map.put("type", 2);//消息类型，2表示语音提醒
-                    map.put("message", "前方到站：" + stopNames[i][1]);
+                    map.put("message", stopNames[i][0]);
                     webSocketServer.sendToUser("driver_"+id,gson.toJson(map));
 
                     //store the stop name in redis
