@@ -97,7 +97,7 @@ public class DriverController {
      * 修改密码
      */
     @PutMapping("/password")
-    public Result<Boolean> changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest){
+    public Result<Boolean> changePassword(@Validated @RequestBody PasswordChangeRequest passwordChangeRequest){
         driverService.changePassword(passwordChangeRequest);
         return Result.success(true);
     }
