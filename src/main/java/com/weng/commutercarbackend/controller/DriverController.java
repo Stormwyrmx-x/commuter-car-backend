@@ -4,9 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.weng.commutercarbackend.common.Result;
 import com.weng.commutercarbackend.mapper.StopMapper;
 import com.weng.commutercarbackend.model.dto.LocationAddRequest;
+import com.weng.commutercarbackend.model.dto.PasswordChangeRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
 import com.weng.commutercarbackend.model.entity.Passenger;
 import com.weng.commutercarbackend.model.entity.Stop;
+import com.weng.commutercarbackend.model.vo.DriverVO;
+import com.weng.commutercarbackend.model.vo.PassengerVO;
 import com.weng.commutercarbackend.model.vo.StopVO;
 import com.weng.commutercarbackend.service.DriverService;
 import jakarta.validation.constraints.NotBlank;
@@ -32,6 +35,24 @@ public class DriverController {
     private final StopMapper stopMapper;
     private final StringRedisTemplate stringRedisTemplate;
     private final PasswordEncoder passwordEncoder;
+
+    /**
+     * 获取当前登录司机信息，
+     * @param driver
+     * @return
+     */
+    @GetMapping("/current")
+    public Result<DriverVO> getCurrentDriver(@AuthenticationPrincipal Driver driver) {
+        DriverVO driverVO = DriverVO.builder()
+                .id(driver.getId())
+                .username(driver.getUsername())
+                .name(driver.getName())
+                .phone(driver.getPhone())
+                .stopId(driver.getStopId())
+                .build();
+        return Result.success(driverVO);
+    }
+
 
     /**
      * 获取当前登录司机的停靠点
@@ -74,17 +95,11 @@ public class DriverController {
 
     /**
      * 修改密码
-     * @param password
-     * @param driver
-     * @return
      */
     @PutMapping("/password")
-    public Result<Boolean> changePassword(@NotBlank String password, @AuthenticationPrincipal Driver driver){
-        LambdaUpdateWrapper<Driver> driverLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        driverLambdaUpdateWrapper.eq(Driver::getId,driver.getId())
-                .set(Driver::getPassword,passwordEncoder.encode(password));
-        boolean result = driverService.update(driverLambdaUpdateWrapper);
-        return Result.success(result);
+    public Result<Boolean> changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest){
+        driverService.changePassword(passwordChangeRequest);
+        return Result.success(true);
     }
 
 }

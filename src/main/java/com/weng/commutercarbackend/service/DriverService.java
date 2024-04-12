@@ -4,6 +4,7 @@ package com.weng.commutercarbackend.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.weng.commutercarbackend.model.dto.LocationAddRequest;
 import com.weng.commutercarbackend.model.dto.LoginRequest;
+import com.weng.commutercarbackend.model.dto.PasswordChangeRequest;
 import com.weng.commutercarbackend.model.dto.RegisterRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
 import com.weng.commutercarbackend.model.vo.LoginVO;
@@ -21,4 +22,6 @@ public interface DriverService extends IService<Driver> {
     Long register(RegisterRequest registerRequest);
 
     void checkStop(Long id, LocationAddRequest locationAddRequest) throws IOException;
+
+    void changePassword(PasswordChangeRequest passwordChangeRequest);
 }

@@ -1,6 +1,7 @@
 package com.weng.commutercarbackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.weng.commutercarbackend.common.ResultCodeEnum;
@@ -9,8 +10,10 @@ import com.weng.commutercarbackend.mapper.DriverMapper;
 import com.weng.commutercarbackend.mapper.StopMapper;
 import com.weng.commutercarbackend.model.dto.LocationAddRequest;
 import com.weng.commutercarbackend.model.dto.LoginRequest;
+import com.weng.commutercarbackend.model.dto.PasswordChangeRequest;
 import com.weng.commutercarbackend.model.dto.RegisterRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
+import com.weng.commutercarbackend.model.entity.Passenger;
 import com.weng.commutercarbackend.model.entity.Stop;
 import com.weng.commutercarbackend.model.vo.LoginVO;
 import com.weng.commutercarbackend.service.DriverService;
@@ -24,6 +27,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.TextMessage;
@@ -141,6 +145,18 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
                 break;
             }
         }
+    }
+
+    @Override
+    public void changePassword(PasswordChangeRequest passwordChangeRequest) {
+        Driver driver = (Driver) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!passwordEncoder.matches(passwordChangeRequest.oldPassword(), driver.getPassword())) {
+            throw new BusinessException(ResultCodeEnum.PARAMS_ERROR, "旧密码错误");
+        }
+        LambdaUpdateWrapper<Driver> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(Driver::getId,driver.getId())
+                .set(Driver::getPassword,passwordEncoder.encode(passwordChangeRequest.newPassword()));
+        driverMapper.update(lambdaUpdateWrapper);
     }
 
     // Haversine半正矢公式 来计算地球上两点之间的距离

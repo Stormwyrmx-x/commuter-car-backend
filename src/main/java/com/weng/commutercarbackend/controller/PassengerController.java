@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.weng.commutercarbackend.common.Result;
 import com.weng.commutercarbackend.common.ResultCodeEnum;
 import com.weng.commutercarbackend.model.dto.LocationAddRequest;
+import com.weng.commutercarbackend.model.dto.PasswordChangeRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
 import com.weng.commutercarbackend.model.entity.Passenger;
 import com.weng.commutercarbackend.model.vo.PassengerVO;
@@ -101,9 +102,6 @@ public class PassengerController {
 
     /**
      * 修改余额
-     * @param money
-     * @param passenger
-     * @return
      */
     @PutMapping("/payment")
     public Result<BigDecimal> payment(@NotNull @Min(0) BigDecimal money, @AuthenticationPrincipal Passenger passenger){
@@ -114,17 +112,11 @@ public class PassengerController {
 
     /**
      * 修改密码
-     * @param password
-     * @param passenger
-     * @return
      */
     @PutMapping("/password")
-    public Result<Boolean> changePassword(@NotBlank String password, @AuthenticationPrincipal Passenger passenger){
-        LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        passengerLambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
-                .set(Passenger::getPassword,passwordEncoder.encode(password));
-        boolean result = passengerService.update(passengerLambdaUpdateWrapper);
-        return Result.success(result);
+    public Result<Boolean> changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest){
+        passengerService.changePassword(passwordChangeRequest);
+        return Result.success(true);
     }
 
 }

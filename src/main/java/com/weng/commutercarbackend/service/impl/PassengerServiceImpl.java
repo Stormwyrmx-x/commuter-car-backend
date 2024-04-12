@@ -10,6 +10,7 @@ import com.weng.commutercarbackend.mapper.DriverMapper;
 import com.weng.commutercarbackend.mapper.PassengerMapper;
 import com.weng.commutercarbackend.mapper.StopMapper;
 import com.weng.commutercarbackend.model.dto.LoginRequest;
+import com.weng.commutercarbackend.model.dto.PasswordChangeRequest;
 import com.weng.commutercarbackend.model.dto.RegisterRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
 import com.weng.commutercarbackend.model.entity.Passenger;
@@ -26,6 +27,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -184,6 +186,20 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         lambdaUpdateWrapper.eq(Passenger::getId,passenger.getId());
         lambdaUpdateWrapper.setSql("money = money + "+money);
         lambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
+        passengerMapper.update(lambdaUpdateWrapper);
+    }
+
+    //如果失败，则直接返回Result.error（code不为200），如果成功，返回Result.success（code为200）
+    //返回Result.success(false)没有任何意义
+    @Override
+    public void changePassword(PasswordChangeRequest passwordChangeRequest) {
+        Passenger passenger = (Passenger) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!passwordEncoder.matches(passwordChangeRequest.oldPassword(), passenger.getPassword())) {
+            throw new BusinessException(ResultCodeEnum.PARAMS_ERROR, "旧密码错误");
+        }
+        LambdaUpdateWrapper<Passenger> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
+                .set(Passenger::getPassword,passwordEncoder.encode(passwordChangeRequest.newPassword()));
         passengerMapper.update(lambdaUpdateWrapper);
     }
 
