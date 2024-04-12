@@ -114,7 +114,7 @@ public class PassengerController {
      * 修改密码
      */
     @PutMapping("/password")
-    public Result<Boolean> changePassword(@RequestBody PasswordChangeRequest passwordChangeRequest){
+    public Result<Boolean> changePassword(@Validated @RequestBody PasswordChangeRequest passwordChangeRequest){
         passengerService.changePassword(passwordChangeRequest);
         return Result.success(true);
     }
