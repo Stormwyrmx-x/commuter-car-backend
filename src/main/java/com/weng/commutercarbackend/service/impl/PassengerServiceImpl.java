@@ -237,8 +237,6 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
                 Map<String,Object> map=new HashMap<>();
                 map.put("type", 1);//消息类型，1表示人车拟合成功
                 map.put("message", "系统检测您已在车上,按确定进行考勤和扣费");
-                //todo 睡眠1秒钟
-                Thread.sleep(10000);
                 webSocketServer.sendToUser("passenger_"+id,gson.toJson(map));
                 //考勤和扣费
                 LambdaUpdateWrapper<Passenger> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();

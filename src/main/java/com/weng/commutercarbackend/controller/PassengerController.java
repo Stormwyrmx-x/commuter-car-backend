@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +46,10 @@ public class PassengerController {
      * @return
      */
     @GetMapping("/current")
-    public Result<PassengerVO> getCurrentPassenger(@AuthenticationPrincipal Passenger passenger) {
+
+    public Result<PassengerVO> getCurrentPassenger(
+            //该注解会调用UserDetailsService的loadUserByUsername方法，将当前登录的用户信息注入到参数中
+            @AuthenticationPrincipal Passenger passenger) {
         PassengerVO passengerVO = PassengerVO.builder()
                 .id(passenger.getId())
                 .username(passenger.getUsername())
