@@ -21,7 +21,7 @@ public interface PassengerService extends IService<Passenger> {
 
     Long register(RegisterRequest registerRequest);
 
-    void compareLocation(Long id) throws IOException;
+    void compareLocation(Long id) throws IOException, InterruptedException;
 
     void updateStationName(Passenger passenger, String stationName) throws IOException;
 

@@ -85,7 +85,7 @@ public class PassengerController {
      */
     @PostMapping("/location")
     public Result<Boolean> addLocation(@RequestBody @Validated LocationAddRequest locationAddRequest,
-                                       @AuthenticationPrincipal Passenger passenger) throws IOException {
+                                       @AuthenticationPrincipal Passenger passenger) throws IOException, InterruptedException {
         //存储passenger的位置和速度
         HashOperations<String, String, String> hashOperations = stringRedisTemplate.opsForHash();
         hashOperations.put("passenger_"+passenger.getId(),locationAddRequest.time(),
