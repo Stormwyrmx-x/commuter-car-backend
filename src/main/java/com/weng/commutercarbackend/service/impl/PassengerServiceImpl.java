@@ -134,6 +134,7 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
             stopMapper.update(stopLambdaUpdateWrapper);
         }
         //修改passenger表中的stationName
+        stop = stopMapper.selectById(stopId);
         LambdaUpdateWrapper<Passenger>passengerLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
         passengerLambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
                 .set(Passenger::getStationName,stationName)
