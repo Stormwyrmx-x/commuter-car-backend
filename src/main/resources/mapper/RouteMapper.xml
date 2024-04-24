@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weng.commutercarbackend.mapper.RouteMapper">
+
+    <resultMap id="BaseResultMap" type="com.weng.commutercarbackend.model.entity.Route">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="number" column="number" jdbcType="TINYINT"/>
+            <result property="changan" column="changan" jdbcType="INTEGER"/>
+            <result property="dongmen" column="dongmen" jdbcType="INTEGER"/>
+            <result property="guojiyi" column="guojiyi" jdbcType="INTEGER"/>
+            <result property="ziwei" column="ziwei" jdbcType="INTEGER"/>
+            <result property="gaoxin" column="gaoxin" jdbcType="INTEGER"/>
+            <result property="laodong" column="laodong" jdbcType="INTEGER"/>
+            <result property="youyi" column="youyi" jdbcType="INTEGER"/>
+            <result property="yun" column="yun" jdbcType="INTEGER"/>
+            <result property="jiaoxi" column="jiaoxi" jdbcType="INTEGER"/>
+            <result property="hai" column="hai" jdbcType="INTEGER"/>
+            <result property="qixiang" column="qixiang" jdbcType="INTEGER"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+    </resultMap>
+
+
+</mapper>
