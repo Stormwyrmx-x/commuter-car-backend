@@ -1,6 +1,5 @@
 package com.weng.commutercarbackend.config;
 
-import com.weng.commutercarbackend.mapper.StopMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;

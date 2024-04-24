@@ -2,6 +2,7 @@ package com.weng.commutercarbackend.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.weng.commutercarbackend.model.dto.LocationAddRequest;
 import com.weng.commutercarbackend.model.dto.LoginRequest;
 import com.weng.commutercarbackend.model.dto.PasswordChangeRequest;
 import com.weng.commutercarbackend.model.dto.RegisterRequest;
@@ -23,9 +24,17 @@ public interface PassengerService extends IService<Passenger> {
 
     void compareLocation(Long id) throws IOException, InterruptedException;
 
-    void updateStationName(Passenger passenger, String stationName) throws IOException;
+//    void updateStationName(Passenger passenger, String stationName) throws IOException;
 
     void payment(BigDecimal money, Passenger passenger);
 
     void changePassword(PasswordChangeRequest passwordChangeRequest);
+
+    void updateRouteId(Long routeId);
+
+    void updateGetonStationName(Passenger passenger, String getonStationName);
+
+    void updateGetoffStationName(Passenger passenger, String getoffStationName);
+
+    void checkStop(Long id, LocationAddRequest locationAddRequest) throws IOException;
 }

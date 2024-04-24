@@ -4,11 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.weng.commutercarbackend.mapper.DriverMapper;
 import com.weng.commutercarbackend.mapper.PassengerMapper;
-import com.weng.commutercarbackend.mapper.StopMapper;
+import com.weng.commutercarbackend.mapper.RouteMapper;
 import com.weng.commutercarbackend.model.entity.Driver;
 import com.weng.commutercarbackend.model.entity.Passenger;
-import com.weng.commutercarbackend.model.entity.Stop;
-import jakarta.annotation.Resource;
 import jakarta.websocket.OnClose;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.OnOpen;
@@ -25,7 +23,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Component
@@ -34,7 +31,7 @@ import java.util.Map;
 public class WebSocketServer {
     private static Map<String, Session> sessionMap = new HashMap<>();
     private static PassengerMapper passengerMapper;
-    private static StopMapper stopMapper;
+    private static RouteMapper routeMapper;
     private static DriverMapper driverMapper;
     private static StringRedisTemplate stringRedisTemplate;
 
@@ -43,8 +40,8 @@ public class WebSocketServer {
         WebSocketServer.passengerMapper = passengerMapper;
     }
     @Autowired
-    public void setStopMapper(StopMapper stopMapper) {
-        WebSocketServer.stopMapper = stopMapper;
+    public void setStopMapper(RouteMapper routeMapper) {
+        WebSocketServer.routeMapper = routeMapper;
     }
     @Autowired
     public void setDriverMapper(DriverMapper driverMapper) {
@@ -72,31 +69,24 @@ public class WebSocketServer {
      */
     @OnClose
     public void close(@PathParam(value = "sid") String sid) {
-        // 如果是司机关闭连接，那么更改司机对应的stop表中的状态。同时清空redis表
+        // 如果是司机关闭连接，那么更改司机的routeId。同时清空redis表
         if (sid.startsWith("driver_")) {
-            LambdaQueryWrapper<Driver>driverLambdaQueryWrapper=new LambdaQueryWrapper<>();
-            driverLambdaQueryWrapper.eq(Driver::getId,Integer.parseInt(sid.substring(7)));
-            Driver driver = driverMapper.selectOne(driverLambdaQueryWrapper);
-
-            LambdaUpdateWrapper<Stop> stopLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            stopLambdaUpdateWrapper.eq(Stop::getId, driver.getStopId());
-            stopLambdaUpdateWrapper.set(Stop::getChangan, 0);
-            stopLambdaUpdateWrapper.set(Stop::getGuojiyi, 0);
-            stopLambdaUpdateWrapper.set(Stop::getZiwei, 0);
-            stopLambdaUpdateWrapper.set(Stop::getGaoxin, 0);
-            stopLambdaUpdateWrapper.set(Stop::getLaodong, 0);
-            stopLambdaUpdateWrapper.set(Stop::getYouyi, 0);
-            stopLambdaUpdateWrapper.set(Stop::getUpdateTime, LocalDateTime.now());
-            stopMapper.update(stopLambdaUpdateWrapper);
+            LambdaUpdateWrapper<Driver>driverLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
+            driverLambdaUpdateWrapper.eq(Driver::getId,Integer.parseInt(sid.substring(7)));
+            driverLambdaUpdateWrapper.set(Driver::getRouteId,0);
+            driverLambdaUpdateWrapper.set(Driver::getUpdateTime, LocalDateTime.now());
+            driverMapper.update(driverLambdaUpdateWrapper);
 
             stringRedisTemplate.delete(sid);
         }
-        // 如果是乘客关闭连接，那么更改乘客对应的driverId，清除stationName。同时清空redis表
+        // 如果是乘客关闭连接，那么更改乘客对应的driverId、routeId，清除上下车站点。同时清空redis表
         else if (sid.startsWith("passenger_")) {
             LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
             passengerLambdaUpdateWrapper.eq(Passenger::getId, Integer.parseInt(sid.substring(10)));
             passengerLambdaUpdateWrapper.set(Passenger::getDriverId, 0);
-            passengerLambdaUpdateWrapper.set(Passenger::getStationName, null);
+            passengerLambdaUpdateWrapper.set(Passenger::getRouteId, 0);
+            passengerLambdaUpdateWrapper.set(Passenger::getGetonStationName, null);
+            passengerLambdaUpdateWrapper.set(Passenger::getGetoffStationName, null);
             passengerLambdaUpdateWrapper.set(Passenger::getUpdateTime, LocalDateTime.now());
             passengerMapper.update(passengerLambdaUpdateWrapper);
 

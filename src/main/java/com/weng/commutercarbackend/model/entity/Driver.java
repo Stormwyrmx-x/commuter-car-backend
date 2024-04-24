@@ -51,9 +51,9 @@ public class Driver implements Serializable, UserDetails {
     private String phone;
 
     /**
-     * 站点表id
+     * 路线id
      */
-    private Long stopId;
+    private Long routeId;
 
     /**
      * 

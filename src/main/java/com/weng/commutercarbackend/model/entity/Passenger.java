@@ -52,14 +52,24 @@ public class Passenger implements Serializable, UserDetails {
     private String phone;
 
     /**
-     * 默认下车站点名称
+     * 上车站点名称
      */
-    private String stationName;
+    private String getonStationName;
+
+    /**
+     * 下车站点名称
+     */
+    private String getoffStationName;
 
     /**
      * 0-不在车上，1+（显示的对应司机的id，表示在哪个司机的车上）
      */
     private Long driverId;
+
+    /**
+     * 路线id
+     */
+    private Long routeId;
 
     /**
      * 钱包余额

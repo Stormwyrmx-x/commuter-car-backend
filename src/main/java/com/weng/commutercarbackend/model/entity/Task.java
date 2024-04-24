@@ -4,18 +4,20 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 站点表
- * @TableName stop
+ * 工单表
+ * @TableName task
  */
-@TableName(value ="stop")
+@TableName(value ="task")
 @Data
-public class Stop implements Serializable {
+@Builder
+public class Task implements Serializable {
     /**
      * 
      */
@@ -23,34 +25,29 @@ public class Stop implements Serializable {
     private Long id;
 
     /**
-     * 长安校区下车人数
+     * 发车时间
      */
-    private Integer changan;
+    private LocalDateTime time;
 
     /**
-     * 国际医下车人数
+     * 司机id
      */
-    private Integer guojiyi;
+    private Long driverId;
 
     /**
-     * 紫薇站下车人数
+     * 路线id
      */
-    private Integer ziwei;
+    private Long routeId;
 
     /**
-     * 高新站下车人数
+     * 车辆id
      */
-    private Integer gaoxin;
+    private Long busId;
 
     /**
-     * 劳动南路站下车人数
+     * 工单状态（0-未分配，1-已分配，2-已执行）
      */
-    private Integer laodong;
-
-    /**
-     * 友谊校区下车人数
-     */
-    private Integer youyi;
+    private Integer status;
 
     /**
      * 
@@ -63,7 +60,7 @@ public class Stop implements Serializable {
     private LocalDateTime updateTime;
 
     /**
-     * 
+     * 0-正常，1-被删除
      */
     private Integer deleted;
 

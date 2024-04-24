@@ -8,15 +8,15 @@ import com.weng.commutercarbackend.common.ResultCodeEnum;
 import com.weng.commutercarbackend.exception.BusinessException;
 import com.weng.commutercarbackend.mapper.DriverMapper;
 import com.weng.commutercarbackend.mapper.PassengerMapper;
-import com.weng.commutercarbackend.mapper.StopMapper;
+import com.weng.commutercarbackend.mapper.RouteMapper;
+import com.weng.commutercarbackend.model.dto.LocationAddRequest;
 import com.weng.commutercarbackend.model.dto.LoginRequest;
 import com.weng.commutercarbackend.model.dto.PasswordChangeRequest;
 import com.weng.commutercarbackend.model.dto.RegisterRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
 import com.weng.commutercarbackend.model.entity.Passenger;
-import com.weng.commutercarbackend.model.entity.Stop;
+import com.weng.commutercarbackend.model.entity.Route;
 import com.weng.commutercarbackend.model.vo.LoginVO;
-import com.weng.commutercarbackend.model.vo.StopVO;
 import com.weng.commutercarbackend.service.PassengerService;
 import com.weng.commutercarbackend.utils.JwtUtil;
 import com.weng.commutercarbackend.websocket.WebSocketServer;
@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
 * @author weng
@@ -49,13 +50,22 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
 
     private final PassengerMapper passengerMapper;
     private final DriverMapper driverMapper;
+    private final RouteMapper routeMapper;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final StringRedisTemplate stringRedisTemplate;
     private final WebSocketServer webSocketServer;
     private final Gson gson;
-    private final StopMapper stopMapper;
+    private final double[][] stops = {
+            {34.028930, 108.764328}, // changan
+            {34.145423, 108.838777}, // guojiyi
+            {34.175846, 108.871443}, // ziwei
+            {34.223366, 108.899247}, // gaoxin
+            {34.240884,108.910038},  // laodong
+            {34.243687, 108.915419}  // youyi
+    };
+    private final String[] stopNames = {"changan", "guojiyi", "ziwei", "gaoxin", "laodong", "youyi"};
 
     @Override
     public LoginVO login(LoginRequest loginRequest) {
@@ -103,85 +113,6 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
     }
 
     @Override
-    public void updateStationName(Passenger passenger, String stationName) throws IOException {
-        Long stopId = driverMapper.selectById(passenger.getDriverId()).getStopId();
-        Stop stop = stopMapper.selectById(stopId);
-        LambdaUpdateWrapper<Stop> stopLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        stopLambdaUpdateWrapper.eq(Stop::getId,stopId);
-        //如果passenger原来已有stationName，则要将原来的站点人数减1
-        if (passenger.getStationName()!=null){
-            switch (passenger.getStationName()){
-                case "changan":
-                    stopLambdaUpdateWrapper.set(Stop::getChangan,stop.getChangan()-1);
-                    break;
-                case "guojiyi":
-                    stopLambdaUpdateWrapper.set(Stop::getGuojiyi,stop.getGuojiyi()-1);
-                    break;
-                case "ziwei":
-                    stopLambdaUpdateWrapper.set(Stop::getZiwei,stop.getZiwei()-1);
-                    break;
-                case "gaoxin":
-                    stopLambdaUpdateWrapper.set(Stop::getGaoxin,stop.getGaoxin()-1);
-                    break;
-                case "laodong":
-                    stopLambdaUpdateWrapper.set(Stop::getLaodong,stop.getLaodong()-1);
-                    break;
-                case "youyi":
-                    stopLambdaUpdateWrapper.set(Stop::getYouyi,stop.getYouyi()-1);
-                    break;
-            }
-            stopLambdaUpdateWrapper.set(Stop::getUpdateTime,LocalDateTime.now());
-            stopMapper.update(stopLambdaUpdateWrapper);
-        }
-        //修改passenger表中的stationName
-        stop = stopMapper.selectById(stopId);
-        LambdaUpdateWrapper<Passenger>passengerLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
-        passengerLambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
-                .set(Passenger::getStationName,stationName)
-                .set(Passenger::getUpdateTime, LocalDateTime.now());
-        passengerMapper.update(passengerLambdaUpdateWrapper);
-        //修改passenger乘坐的司机对应的stop表，将对应站点人数加1
-        switch (stationName){
-            case "changan":
-//                stopLambdaUpdateWrapper.setSql("changan = changan + 1");
-                stopLambdaUpdateWrapper.set(Stop::getChangan,stop.getChangan()+1);
-                break;
-            case "guojiyi":
-                stopLambdaUpdateWrapper.set(Stop::getGuojiyi,stop.getGuojiyi()+1);
-                break;
-            case "ziwei":
-                stopLambdaUpdateWrapper.set(Stop::getZiwei,stop.getZiwei()+1);
-                break;
-            case "gaoxin":
-                stopLambdaUpdateWrapper.set(Stop::getGaoxin,stop.getGaoxin()+1);
-                break;
-            case "laodong":
-                stopLambdaUpdateWrapper.set(Stop::getLaodong,stop.getLaodong()+1);
-                break;
-            case "youyi":
-                stopLambdaUpdateWrapper.set(Stop::getYouyi,stop.getYouyi()+1);
-                break;
-        }
-        stopLambdaUpdateWrapper.set(Stop::getUpdateTime,LocalDateTime.now());
-        stopMapper.update(stopLambdaUpdateWrapper);
-        stop = stopMapper.selectById(stopId);
-        //websocket传递给司机端Stop表的修改后的信息
-        StopVO stopVO = StopVO.builder()
-                .id(stop.getId())
-                .changan(stop.getChangan())
-                .guojiyi(stop.getGuojiyi())
-                .ziwei(stop.getZiwei())
-                .gaoxin(stop.getGaoxin())
-                .laodong(stop.getLaodong())
-                .youyi(stop.getYouyi())
-                .build();
-        Map<String,Object> map=new HashMap<>();
-        map.put("type", 3);//消息类型，1表示人车拟合成功
-        map.put("message", stopVO);
-        webSocketServer.sendToUser("driver_"+passenger.getDriverId(),gson.toJson(map));
-    }
-
-    @Override
     public void payment(BigDecimal money, Passenger passenger) {
         LambdaUpdateWrapper<Passenger> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(Passenger::getId,passenger.getId());
@@ -202,6 +133,181 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         lambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
                 .set(Passenger::getPassword,passwordEncoder.encode(passwordChangeRequest.newPassword()));
         passengerMapper.update(lambdaUpdateWrapper);
+    }
+
+    @Override
+    public void updateRouteId(Long routeId) {
+        Passenger passenger = (Passenger) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LambdaUpdateWrapper<Passenger> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
+                .set(Passenger::getRouteId,routeId);
+        passengerMapper.update(lambdaUpdateWrapper);
+    }
+
+    @Override
+    public void updateGetonStationName(Passenger passenger, String getonStationName) {
+        LambdaUpdateWrapper<Route>routeLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
+        routeLambdaUpdateWrapper.eq(Route::getId,passenger.getRouteId());
+        //如果passenger原来已有getonStationName，则要将原来的站点人数减1
+        if (passenger.getGetonStationName()!=null){
+            switch (passenger.getGetonStationName()){
+                case "changan":
+                    routeLambdaUpdateWrapper.setSql("changan = changan - 1");
+                    break;
+                case "dongmen":
+                    routeLambdaUpdateWrapper.setSql("dongmen = dongmen - 1");
+                    break;
+                case "guojiyi":
+                    routeLambdaUpdateWrapper.setSql("guojiyi = guojiyi - 1");
+                    break;
+                case "ziwei":
+                    routeLambdaUpdateWrapper.setSql("ziwei = ziwei - 1");
+                    break;
+                case "gaoxin":
+                    routeLambdaUpdateWrapper.setSql("gaoxin = gaoxin - 1");
+                    break;
+                case "youyi":
+                    routeLambdaUpdateWrapper.setSql("youyi = youyi - 1");
+                    break;
+            }
+        }
+        //修改passenger表中的getonStationName
+        LambdaUpdateWrapper<Passenger>passengerLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
+        passengerLambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
+                .set(Passenger::getGetonStationName,getonStationName)
+                .set(Passenger::getUpdateTime, LocalDateTime.now());
+        passengerMapper.update(passengerLambdaUpdateWrapper);
+        //修改passenger对应的route表，将对应站点人数加1
+        switch (getonStationName){
+            case "changan":
+                routeLambdaUpdateWrapper.setSql("changan = changan + 1");
+                break;
+            case "dongmen":
+                routeLambdaUpdateWrapper.setSql("dongmen = dongmen + 1");
+                break;
+            case "guojiyi":
+                routeLambdaUpdateWrapper.setSql("guojiyi = guojiyi + 1");
+                break;
+            case "ziwei":
+                routeLambdaUpdateWrapper.setSql("ziwei = ziwei + 1");
+                break;
+            case "gaoxin":
+                routeLambdaUpdateWrapper.setSql("gaoxin = gaoxin + 1");
+                break;
+            case "youyi":
+                routeLambdaUpdateWrapper.setSql("youyi = youyi + 1");
+                break;
+        }
+        routeLambdaUpdateWrapper.set(Route::getUpdateTime,LocalDateTime.now());
+        routeMapper.update(routeLambdaUpdateWrapper);
+    }
+
+    @Override
+    public void updateGetoffStationName(Passenger passenger, String getoffStationName) {
+        LambdaUpdateWrapper<Route>routeLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
+        routeLambdaUpdateWrapper.eq(Route::getId,passenger.getRouteId());
+        //如果passenger原来已有getoffStationName，则要将原来的站点人数减1
+        if (passenger.getGetoffStationName()!=null){
+            switch (passenger.getGetoffStationName()){
+                case "dongmen":
+                    routeLambdaUpdateWrapper.setSql("dongmen = dongmen - 1");
+                    break;
+                case "guojiyi":
+                    routeLambdaUpdateWrapper.setSql("guojiyi = guojiyi - 1");
+                    break;
+                case "ziwei":
+                    routeLambdaUpdateWrapper.setSql("ziwei = ziwei - 1");
+                    break;
+                case "gaoxin":
+                    routeLambdaUpdateWrapper.setSql("gaoxin = gaoxin - 1");
+                    break;
+                case "laodong":
+                    routeLambdaUpdateWrapper.setSql("laodong = laodong - 1");
+                    break;
+                case "youyi":
+                    routeLambdaUpdateWrapper.setSql("youyi = youyi - 1");
+                    break;
+                case "yun":
+                    routeLambdaUpdateWrapper.setSql("yun = yun - 1");
+                    break;
+                case "jiaoxi":
+                    routeLambdaUpdateWrapper.setSql("jiaoxi = jiaoxi - 1");
+                    break;
+                case "hai":
+                    routeLambdaUpdateWrapper.setSql("hai = hai - 1");
+                    break;
+                case "qixiang":
+                    routeLambdaUpdateWrapper.setSql("qixiang = qixiang - 1");
+                    break;
+            }
+        }
+        //修改passenger表中的getoffStationName
+        LambdaUpdateWrapper<Passenger>passengerLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
+        passengerLambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
+                .set(Passenger::getGetoffStationName,getoffStationName)
+                .set(Passenger::getUpdateTime, LocalDateTime.now());
+        passengerMapper.update(passengerLambdaUpdateWrapper);
+        //修改passenger对应的route表，将对应站点人数加1
+        switch (getoffStationName){
+            case "dongmen":
+                routeLambdaUpdateWrapper.setSql("dongmen = dongmen + 1");
+                break;
+            case "guojiyi":
+                routeLambdaUpdateWrapper.setSql("guojiyi = guojiyi + 1");
+                break;
+            case "ziwei":
+                routeLambdaUpdateWrapper.setSql("ziwei = ziwei + 1");
+                break;
+            case "gaoxin":
+                routeLambdaUpdateWrapper.setSql("gaoxin = gaoxin + 1");
+                break;
+            case "laodong":
+                routeLambdaUpdateWrapper.setSql("laodong = laodong + 1");
+                break;
+            case "youyi":
+                routeLambdaUpdateWrapper.setSql("youyi = youyi + 1");
+                break;
+            case "yun":
+                routeLambdaUpdateWrapper.setSql("yun = yun + 1");
+                break;
+            case "jiaoxi":
+                routeLambdaUpdateWrapper.setSql("jiaoxi = jiaoxi + 1");
+                break;
+            case "hai":
+                routeLambdaUpdateWrapper.setSql("hai = hai + 1");
+                break;
+            case "qixiang":
+                routeLambdaUpdateWrapper.setSql("qixiang = qixiang + 1");
+                break;
+        }
+        routeLambdaUpdateWrapper.set(Route::getUpdateTime,LocalDateTime.now());
+        routeMapper.update(routeLambdaUpdateWrapper);
+    }
+
+    @Override
+    public void checkStop(Long id, LocationAddRequest locationAddRequest) throws IOException {
+        Passenger passenger = passengerMapper.selectById(id);
+        String getoffStationName = passenger.getGetoffStationName();
+        for (int i = 0; i < stops.length; i++) {
+            double distance = calculateDistance(locationAddRequest.latitude(), locationAddRequest.longitude(),
+                    stops[i][0], stops[i][1]);
+            if (distance < 1 && getoffStationName.equals(stopNames[i])) {
+                // If the distance is less than 1km, check if the driver has already arrived at the stop
+                //如果已经语音播报过了，则2小时内到达站点不再播报
+                HashOperations<String, String, String> hashOperations = stringRedisTemplate.opsForHash();
+                if(hashOperations.get("passenger_"+id,stopNames[i])==null){
+                    //send a message to the front end via WebSocket
+                    Map<String,Object> map=new HashMap<>();
+                    map.put("type", 2);//消息类型，2表示语音提醒
+                    map.put("message", stopNames[i]);
+                    webSocketServer.sendToUser("passenger_"+id,gson.toJson(map));
+                    //store the stop name in redis
+                    hashOperations.put("passenger_"+id,stopNames[i],"-");
+                    stringRedisTemplate.expire("passenger_"+id,2, TimeUnit.HOURS);
+                }
+                break;
+            }
+        }
     }
 
     /**
@@ -250,8 +356,6 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
             }
         }
     }
-
-
 
     private Boolean compare(String passengerLocation, String driverLocation) {
         String[] passengerLocationArray = passengerLocation.split(",");

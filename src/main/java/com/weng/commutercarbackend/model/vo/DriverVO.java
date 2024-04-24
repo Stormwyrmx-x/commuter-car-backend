@@ -23,9 +23,14 @@ public record DriverVO(
          */
          String phone,
 
-        /**
-         * 站点表id
-         */
-         Long stopId
+         /**
+          * 路线id
+          */
+         Long routeId,
+
+         /**
+          * 路线号(1~4)
+          */
+         Integer number
 ) {
 }

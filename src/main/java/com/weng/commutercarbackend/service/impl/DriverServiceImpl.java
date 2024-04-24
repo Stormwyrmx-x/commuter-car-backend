@@ -7,14 +7,12 @@ import com.google.gson.Gson;
 import com.weng.commutercarbackend.common.ResultCodeEnum;
 import com.weng.commutercarbackend.exception.BusinessException;
 import com.weng.commutercarbackend.mapper.DriverMapper;
-import com.weng.commutercarbackend.mapper.StopMapper;
+import com.weng.commutercarbackend.mapper.RouteMapper;
 import com.weng.commutercarbackend.model.dto.LocationAddRequest;
 import com.weng.commutercarbackend.model.dto.LoginRequest;
 import com.weng.commutercarbackend.model.dto.PasswordChangeRequest;
 import com.weng.commutercarbackend.model.dto.RegisterRequest;
 import com.weng.commutercarbackend.model.entity.Driver;
-import com.weng.commutercarbackend.model.entity.Passenger;
-import com.weng.commutercarbackend.model.entity.Stop;
 import com.weng.commutercarbackend.model.vo.LoginVO;
 import com.weng.commutercarbackend.service.DriverService;
 import com.weng.commutercarbackend.utils.JwtUtil;
@@ -23,15 +21,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -51,7 +46,7 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
     implements DriverService {
     
     private final DriverMapper driverMapper;
-    private final StopMapper stopMapper;
+    private final RouteMapper routeMapper;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
@@ -66,14 +61,7 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
             {34.240884,108.910038},  // laodong
             {34.243687, 108.915419}  // youyi
     };
-    private final String[][] stopNames = {
-            {"changan","长安校区"},
-            {"guojiyi","国际医学中心"},
-            {"ziwei","紫薇站"},
-            {"gaoxin","高新站"},
-            {"laodong","劳动路站"},
-            {"youyi","友谊校区"}
-    };
+    private final String[] stopNames = {"changan", "guojiyi", "ziwei", "gaoxin", "laodong", "youyi"};
 
     @Override
     public LoginVO login(LoginRequest loginRequest) {
@@ -108,14 +96,11 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
             throw new BusinessException(ResultCodeEnum.PARAMS_ERROR, "账号重复");
         }
         //3.存储到数据库
-        Stop stop=new Stop();
-        stopMapper.insert(stop);
         Driver driver = Driver.builder()
                 .username(registerRequest.username())
                 .password(passwordEncoder.encode(registerRequest.password()))
                 .name(registerRequest.name())
                 .phone(registerRequest.phone())
-                .stopId(stop.getId())
                 .build();
         driverMapper.insert(driver);//如果插入失败，它会抛出异常.而不是返回一个负数
 
@@ -131,15 +116,15 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
                 // If the distance is less than 1km, check if the driver has already arrived at the stop
                 //如果已经语音播报过了，则2小时内到达站点不再播报
                 HashOperations<String, String, String> hashOperations = stringRedisTemplate.opsForHash();
-                if(hashOperations.get("driver_"+id,stopNames[i][0])==null){
+                if(hashOperations.get("driver_"+id,stopNames[i])==null){
                     //send a message to the front end via WebSocket
                     Map<String,Object> map=new HashMap<>();
                     map.put("type", 2);//消息类型，2表示语音提醒
-                    map.put("message", stopNames[i][0]);
+                    map.put("message", stopNames[i]);
                     webSocketServer.sendToUser("driver_"+id,gson.toJson(map));
 
                     //store the stop name in redis
-                    hashOperations.put("driver_"+id,stopNames[i][0],"-");
+                    hashOperations.put("driver_"+id,stopNames[i],"-");
                     stringRedisTemplate.expire("driver_"+id,2, TimeUnit.HOURS);
                 }
                 break;
@@ -156,6 +141,15 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
         LambdaUpdateWrapper<Driver> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(Driver::getId,driver.getId())
                 .set(Driver::getPassword,passwordEncoder.encode(passwordChangeRequest.newPassword()));
+        driverMapper.update(lambdaUpdateWrapper);
+    }
+
+    @Override
+    public void updateRouteId(Long routeId) {
+        Driver driver = (Driver) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LambdaUpdateWrapper<Driver> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(Driver::getId,driver.getId())
+                .set(Driver::getRouteId,routeId);
         driverMapper.update(lambdaUpdateWrapper);
     }
 

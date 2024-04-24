@@ -24,4 +24,6 @@ public interface DriverService extends IService<Driver> {
     void checkStop(Long id, LocationAddRequest locationAddRequest) throws IOException;
 
     void changePassword(PasswordChangeRequest passwordChangeRequest);
+
+    void updateRouteId(Long routeId);
 }

@@ -4,24 +4,21 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.weng.commutercarbackend.mapper.PassengerMapper">
 
-<!--    <resultMap id="BaseResultMap" type="generator.domain.Passenger">-->
-<!--            <id property="id" column="id" jdbcType="BIGINT"/>-->
-<!--            <result property="username" column="username" jdbcType="VARCHAR"/>-->
-<!--            <result property="password" column="password" jdbcType="VARCHAR"/>-->
-<!--            <result property="name" column="name" jdbcType="VARCHAR"/>-->
-<!--            <result property="phone" column="phone" jdbcType="VARCHAR"/>-->
-<!--            <result property="stationName" column="station_name" jdbcType="VARCHAR"/>-->
-<!--            <result property="driverId" column="driver_id" jdbcType="BIGINT"/>-->
-<!--            <result property="money" column="money" jdbcType="DECIMAL"/>-->
-<!--            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>-->
-<!--            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>-->
-<!--            <result property="deleted" column="deleted" jdbcType="TINYINT"/>-->
-<!--    </resultMap>-->
+    <resultMap id="BaseResultMap" type="com.weng.commutercarbackend.model.entity.Passenger">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="username" column="username" jdbcType="VARCHAR"/>
+            <result property="password" column="password" jdbcType="VARCHAR"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="phone" column="phone" jdbcType="VARCHAR"/>
+            <result property="getonStationName" column="geton_station_name" jdbcType="VARCHAR"/>
+            <result property="getoffStationName" column="getoff_station_name" jdbcType="VARCHAR"/>
+            <result property="driverId" column="driver_id" jdbcType="BIGINT"/>
+            <result property="routeId" column="route_id" jdbcType="BIGINT"/>
+            <result property="money" column="money" jdbcType="DECIMAL"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="deleted" column="deleted" jdbcType="TINYINT"/>
+    </resultMap>
 
-<!--    <sql id="Base_Column_List">-->
-<!--        id,username,password,-->
-<!--        name,phone,station_name,-->
-<!--        driver_id,money,create_time,-->
-<!--        update_time,deleted-->
-<!--    </sql>-->
+
 </mapper>
