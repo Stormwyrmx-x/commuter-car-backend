@@ -1,7 +1,11 @@
 package com.weng.commutercarbackend.service;
 
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.weng.commutercarbackend.model.dto.TaskAddRequest;
+import com.weng.commutercarbackend.model.dto.TaskPageRequest;
+import com.weng.commutercarbackend.model.dto.TaskUpdateRequest;
 import com.weng.commutercarbackend.model.entity.Task;
 import com.weng.commutercarbackend.model.vo.TaskVO;
 
@@ -20,4 +24,12 @@ public interface TaskService extends IService<Task> {
     List<TaskVO> getTaskByTimeAndNumber(LocalDateTime time, Integer number);
 
     Task updateTaskStatus(Long taskId);
+
+    Page<TaskVO> listTaskByPage(TaskPageRequest taskPageRequest);
+
+    void addTask(TaskAddRequest taskAddRequest);
+
+    void deleteTaskById(Long id);
+
+    void updateTaskById(TaskUpdateRequest taskUpdateRequest);
 }

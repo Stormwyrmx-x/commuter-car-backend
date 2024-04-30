@@ -29,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -140,7 +141,8 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
         }
         LambdaUpdateWrapper<Driver> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(Driver::getId,driver.getId())
-                .set(Driver::getPassword,passwordEncoder.encode(passwordChangeRequest.newPassword()));
+                .set(Driver::getPassword,passwordEncoder.encode(passwordChangeRequest.newPassword()))
+                .set(Driver::getUpdateTime, LocalDateTime.now());
         driverMapper.update(lambdaUpdateWrapper);
     }
 
@@ -149,6 +151,7 @@ public class DriverServiceImpl extends ServiceImpl<DriverMapper, Driver>
         Driver driver = (Driver) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         LambdaUpdateWrapper<Driver> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(Driver::getId,driver.getId())
+                .set(Driver::getUpdateTime, LocalDateTime.now())
                 .set(Driver::getRouteId,routeId);
         driverMapper.update(lambdaUpdateWrapper);
     }

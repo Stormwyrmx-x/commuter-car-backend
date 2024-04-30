@@ -131,7 +131,8 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         }
         LambdaUpdateWrapper<Passenger> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(Passenger::getId,passenger.getId())
-                .set(Passenger::getPassword,passwordEncoder.encode(passwordChangeRequest.newPassword()));
+                .set(Passenger::getPassword,passwordEncoder.encode(passwordChangeRequest.newPassword()))
+                .set(Passenger::getUpdateTime, LocalDateTime.now());
         passengerMapper.update(lambdaUpdateWrapper);
     }
 

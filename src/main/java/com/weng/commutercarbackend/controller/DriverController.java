@@ -168,4 +168,19 @@ public class DriverController {
         return Result.success(true);
     }
 
+    /**
+     * 获取所有司机信息
+     * @return
+     */
+    @GetMapping("/all")
+    public Result<List<DriverVO>> getAll(){
+        List<Driver> driverList = driverService.list();
+        List<DriverVO> driverVOList = driverList.stream().map(driver -> DriverVO.builder()
+                .id(driver.getId())
+                .username(driver.getUsername())
+                .name(driver.getName())
+                .build()).toList();
+        return Result.success(driverVOList);
+    }
+
 }

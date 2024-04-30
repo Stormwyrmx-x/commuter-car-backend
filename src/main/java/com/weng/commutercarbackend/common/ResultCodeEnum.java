@@ -9,7 +9,7 @@ import lombok.Getter;
 public enum ResultCodeEnum {
     //1.创建对象(默认修饰符public static final ResultCodeEnum)
     //200 OK 表示成功，其它都表示错误
-    SUCCESS(200, "success"),
+    SUCCESS(200, "成功"),
     //400 Bad Request 客户端错误，客户端发送的请求无效
     PARAMS_ERROR(400, "请求参数错误"),
     //401 Unauthorized 没有权限
