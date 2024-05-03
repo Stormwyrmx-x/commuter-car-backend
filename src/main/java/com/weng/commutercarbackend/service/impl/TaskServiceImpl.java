@@ -43,6 +43,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
         taskLambdaQueryWrapper.eq(Task::getDriverId,id);
         //查询状态为1(未执行)的工单
         taskLambdaQueryWrapper.eq(Task::getStatus,1);
+        taskLambdaQueryWrapper.orderBy(true,true,Task::getTime);
         List<Task> taskList = taskMapper.selectList(taskLambdaQueryWrapper);
         return taskList.stream().map(task -> TaskVO.builder()
                 .id(task.getId())
