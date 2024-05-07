@@ -18,18 +18,17 @@ import java.util.Set;
 
 @Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler<T>
-{
+public class GlobalExceptionHandler<T> {
     /**
      * 业务异常
+     *
      * @param businessException
      * @return
      */
     @ExceptionHandler(BusinessException.class)
-    public Result<T> businessExceptionHandler(BusinessException businessException)
-    {
-        log.error("BusinessException:",businessException);
-        return Result.error(businessException.getResultCodeEnum(),businessException.getMessage());
+    public Result<T> businessExceptionHandler(BusinessException businessException) {
+        log.error("BusinessException:", businessException);
+        return Result.error(businessException.getResultCodeEnum(), businessException.getMessage());
     }
 
     /**
@@ -38,60 +37,51 @@ public class GlobalExceptionHandler<T>
     @ExceptionHandler(MethodArgumentNotValidException.class)//extends BindException
     public Result<T> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException methodArgumentNotValidException) {
         String message = Objects.requireNonNull(methodArgumentNotValidException.getBindingResult().getFieldError()).getDefaultMessage();
-        log.error("MethodArgumentNotValidException:",methodArgumentNotValidException);
-        return Result.error(ResultCodeEnum.PARAMS_ERROR,message);
+        log.error("MethodArgumentNotValidException:", methodArgumentNotValidException);
+        return Result.error(ResultCodeEnum.PARAMS_ERROR, message);
     }
 
     /**
      * 参数校验失败的异常处理器
      */
     @ExceptionHandler(ConstraintViolationException.class)//extends ValidationException
-    public Result<T> ConstraintViolationExceptionHandler(ConstraintViolationException constraintViolationException)
-    {
+    public Result<T> ConstraintViolationExceptionHandler(ConstraintViolationException constraintViolationException) {
         Set<ConstraintViolation<?>> constraintViolations =
                 constraintViolationException.getConstraintViolations();
         StringBuilder stringBuilder = new StringBuilder();
-        for (ConstraintViolation<?> constraintViolation : constraintViolations)
-        {
+        for (ConstraintViolation<?> constraintViolation : constraintViolations) {
             stringBuilder.append(constraintViolation.getMessage()).append(",");
         }
-        log.error("ConstraintViolationException:",constraintViolationException);
+        log.error("ConstraintViolationException:", constraintViolationException);
         return Result.error(ResultCodeEnum.PARAMS_ERROR, stringBuilder.toString());
     }
 
     /**
-     *  请求参数格式错误
+     * 请求参数格式错误
      */
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
     public Result<T> badRequestHandler(Exception exception) {
 
-        log.error("BadRequestException:",exception);
+        log.error("BadRequestException:", exception);
         return Result.error(ResultCodeEnum.PARAMS_ERROR);
     }
 
     /**
-     *  用户没有权限
+     * 用户没有权限
      */
     @ExceptionHandler(AccessDeniedException.class)
     public Result<T> accessDeniedExceptionHandler(AccessDeniedException exception) {
-        log.error("AccessDeniedException:",exception);
+        log.error("AccessDeniedException:", exception);
         return Result.error(ResultCodeEnum.NO_AUTH_ERROR);
     }
+
     /**
      * 兜底
      */
     @ExceptionHandler(Exception.class)
-    public Result<T> exceptionHandler(Exception exception)
-    {
-        log.error("Exception:{}",exception.getClass());
-        return Result.error(ResultCodeEnum.SYSTEM_ERROR,exception.getMessage());
+    public Result<T> exceptionHandler(Exception exception) {
+        log.error("Exception:{}", exception.getClass());
+        return Result.error(ResultCodeEnum.SYSTEM_ERROR, exception.getMessage());
     }
-
-//    @ExceptionHandler(Exception.class)
-//    public Result<T> exceptionHandler(Exception exception)
-//    {
-//        log.error("Exception:{}",exception.getClass());
-//        return Result.error(ResultCodeEnum.SYSTEM_ERROR);
-//    }
 
 }
