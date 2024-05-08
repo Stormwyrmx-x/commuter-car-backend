@@ -107,12 +107,13 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
     }
 
     @Override
-    public Task updateTaskStatus(Long taskId, Integer status) {
-        Task task = taskMapper.selectById(taskId);
-        task.setStatus(status);
-        task.setUpdateTime(LocalDateTime.now());
-        taskMapper.updateById(task);
-        return task;
+    public void cancelTask(Long taskId) {
+        LambdaUpdateWrapper<Task>taskLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
+        taskLambdaUpdateWrapper.eq(Task::getId,taskId)
+                .set(Task::getDriverId,null)
+                .set(Task::getStatus,0)
+                .set(Task::getUpdateTime,LocalDateTime.now());
+        taskMapper.update(taskLambdaUpdateWrapper);
     }
 
     @Override
