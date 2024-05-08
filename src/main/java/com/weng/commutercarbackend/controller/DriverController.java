@@ -45,7 +45,6 @@ public class DriverController {
 
     /**
      * 执行工单,改变工单状态和司机路线状态
-     * todo 取消工单
      */
     @PutMapping("/task/{taskId}")
     public Result<Boolean> executeTask(@PathVariable Long taskId) {
@@ -55,6 +54,17 @@ public class DriverController {
         driverService.updateRouteId(task.getRouteId());
         return Result.success(true);
     }
+
+    /**
+     * 取消工单
+     */
+    @PutMapping("/task/cancel/{taskId}")
+    public Result<Boolean> cancelTask(@PathVariable Long taskId){
+        //更新工单状态为0（未分配）
+        taskService.updateTaskStatus(taskId,0);
+        return Result.success(true);
+    }
+
 
     /**
      * 执行工单后，获取当前登录司机信息

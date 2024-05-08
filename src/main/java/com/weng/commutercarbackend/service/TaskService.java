@@ -25,6 +25,8 @@ public interface TaskService extends IService<Task> {
 
     Task updateTaskStatus(Long taskId);
 
+    Task updateTaskStatus(Long taskId, Integer status);
+
     Page<TaskVO> listTaskByPage(TaskPageRequest taskPageRequest);
 
     void addTask(TaskAddRequest taskAddRequest);

@@ -24,7 +24,7 @@ public record TaskPageRequest(
         Long driverId,
 
         @Min(value = 0, message = "状态不能小于0")
-        @Max(value = 2, message = "状态不能大于2") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        @Max(value = 2, message = "状态不能大于2")
         Integer status,
 
         @Min(value = 1, message = "路线号不能小于1")
