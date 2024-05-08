@@ -12,6 +12,7 @@ import com.weng.commutercarbackend.model.dto.TaskUpdateRequest;
 import com.weng.commutercarbackend.model.entity.Route;
 import com.weng.commutercarbackend.model.entity.Task;
 import com.weng.commutercarbackend.model.vo.TaskVO;
+import com.weng.commutercarbackend.service.DriverService;
 import com.weng.commutercarbackend.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -33,6 +34,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
     private final TaskMapper taskMapper;
     private final BusMapper busMapper;
     private final RouteMapper routeMapper;
+    private final DriverService driverService;
     private final DriverMapper driverMapper;
     private final PassengerMapper passengerMapper;
 
@@ -109,11 +111,15 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
     @Override
     public void cancelTask(Long taskId) {
         LambdaUpdateWrapper<Task>taskLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
+        //更新工单状态为0（未分配）
+        //更新司机id为null
         taskLambdaUpdateWrapper.eq(Task::getId,taskId)
                 .set(Task::getDriverId,null)
                 .set(Task::getStatus,0)
                 .set(Task::getUpdateTime,LocalDateTime.now());
         taskMapper.update(taskLambdaUpdateWrapper);
+        //更新司机当前routeId为0
+        driverService.updateRouteId(0L);
     }
 
     @Override

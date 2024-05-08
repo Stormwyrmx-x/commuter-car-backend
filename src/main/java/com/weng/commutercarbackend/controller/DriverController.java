@@ -60,7 +60,6 @@ public class DriverController {
      */
     @PutMapping("/task/cancel/{taskId}")
     public Result<Boolean> cancelTask(@PathVariable Long taskId){
-        //更新工单状态为0（未分配）
         taskService.cancelTask(taskId);
         return Result.success(true);
     }
