@@ -67,7 +67,6 @@ public class PassengerController {
 
     /**
      * 获取当前登录乘客信息
-     * todo 根据获取的number路线号，从而来显示不同的上车和下车站点
      * @param passenger
      * @return
      */

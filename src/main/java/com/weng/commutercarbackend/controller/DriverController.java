@@ -67,7 +67,6 @@ public class DriverController {
 
     /**
      * 执行工单后，获取当前登录司机信息
-     * todo 根据获取的number路线号，从而来显示不同的上车和下车站点
      * @param driver
      * @return
      */
