@@ -145,12 +145,13 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task>
         //分页查询，先Task分页查询后，再构造Page<TaskVO>
         Page<Task>taskPage=new Page<>(taskPageRequest.current(),taskPageRequest.size());
         taskMapper.selectPage(taskPage,taskLambdaQueryWrapper);
-        List<TaskVO> taskVOList = taskPage.getRecords().stream().map(task -> TaskVO.builder()
+        List<TaskVO> taskVOList = taskPage.getRecords().stream().map(task ->
+                TaskVO.builder()
                 .id(task.getId())
                 .time(task.getTime())
                 .driverId(task.getDriverId())
-                .username(driverMapper.selectById(task.getDriverId()).getUsername())
-                .name(driverMapper.selectById(task.getDriverId()).getName())
+                .username(task.getDriverId()==null?null:driverMapper.selectById(task.getDriverId()).getUsername())
+                .name(task.getDriverId()==null?null:driverMapper.selectById(task.getDriverId()).getName())
                 .routeId(task.getRouteId())
                 .number(routeMapper.selectById(task.getRouteId()).getNumber())
                 .busId(task.getBusId())
