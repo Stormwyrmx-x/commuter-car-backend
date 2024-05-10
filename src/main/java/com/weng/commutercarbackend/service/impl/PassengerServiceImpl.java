@@ -374,7 +374,15 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         }
         routeLambdaUpdateWrapper.set(Route::getUpdateTime,LocalDateTime.now());
         routeMapper.update(routeLambdaUpdateWrapper);
-        updateRouteId(0L);
+
+        LambdaUpdateWrapper<Passenger> passengerLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        passengerLambdaUpdateWrapper.eq(Passenger::getId,passenger.getId());
+        passengerLambdaUpdateWrapper.set(Passenger::getDriverId,0);
+        passengerLambdaUpdateWrapper.set(Passenger::getRouteId,0);
+        passengerLambdaUpdateWrapper.set(Passenger::getGetonStationName,null);
+        passengerLambdaUpdateWrapper.set(Passenger::getGetoffStationName,null);
+        passengerLambdaUpdateWrapper.set(Passenger::getUpdateTime,LocalDateTime.now());
+        passengerMapper.update(passengerLambdaUpdateWrapper);
     }
 
     /**
