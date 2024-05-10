@@ -69,11 +69,10 @@ public class PassengerController {
      * 取消路线选择
      */
     @PutMapping("/task/cancel")
-    public Result<Boolean> cancelRoute(){
-        passengerService.updateRouteId(0L);
+    public Result<Boolean> cancelRoute(String getonStationName,String getoffStationName){
+        passengerService.cancelRoute(getonStationName,getoffStationName);
         return Result.success(true);
     }
-
 
     /**
      * 获取当前登录乘客信息

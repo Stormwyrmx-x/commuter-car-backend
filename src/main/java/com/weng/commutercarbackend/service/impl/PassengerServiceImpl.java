@@ -311,6 +311,72 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         }
     }
 
+    @Override
+    public void cancelRoute(String getonStationName, String getoffStationName) {
+        LambdaUpdateWrapper<Route>routeLambdaUpdateWrapper=new LambdaUpdateWrapper<>();
+        Passenger passenger = (Passenger) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        routeLambdaUpdateWrapper.eq(Route::getId,passenger.getRouteId());
+        if (getonStationName!=null){
+            switch (getonStationName){
+                case "changan":
+                    routeLambdaUpdateWrapper.setSql("changan = changan - 1");
+                    break;
+                case "dongmen":
+                    routeLambdaUpdateWrapper.setSql("dongmen = dongmen - 1");
+                    break;
+                case "guojiyi":
+                    routeLambdaUpdateWrapper.setSql("guojiyi = guojiyi - 1");
+                    break;
+                case "ziwei":
+                    routeLambdaUpdateWrapper.setSql("ziwei = ziwei - 1");
+                    break;
+                case "gaoxin":
+                    routeLambdaUpdateWrapper.setSql("gaoxin = gaoxin - 1");
+                    break;
+                case "youyi":
+                    routeLambdaUpdateWrapper.setSql("youyi = youyi - 1");
+                    break;
+            }
+        }
+        if (getoffStationName!=null){
+            switch (getoffStationName){
+                case "dongmen":
+                    routeLambdaUpdateWrapper.setSql("dongmen = dongmen - 1");
+                    break;
+                case "guojiyi":
+                    routeLambdaUpdateWrapper.setSql("guojiyi = guojiyi - 1");
+                    break;
+                case "ziwei":
+                    routeLambdaUpdateWrapper.setSql("ziwei = ziwei - 1");
+                    break;
+                case "gaoxin":
+                    routeLambdaUpdateWrapper.setSql("gaoxin = gaoxin - 1");
+                    break;
+                case "laodong":
+                    routeLambdaUpdateWrapper.setSql("laodong = laodong - 1");
+                    break;
+                case "youyi":
+                    routeLambdaUpdateWrapper.setSql("youyi = youyi - 1");
+                    break;
+                case "yun":
+                    routeLambdaUpdateWrapper.setSql("yun = yun - 1");
+                    break;
+                case "jiaoxi":
+                    routeLambdaUpdateWrapper.setSql("jiaoxi = jiaoxi - 1");
+                    break;
+                case "hai":
+                    routeLambdaUpdateWrapper.setSql("hai = hai - 1");
+                    break;
+                case "qixiang":
+                    routeLambdaUpdateWrapper.setSql("qixiang = qixiang - 1");
+                    break;
+            }
+        }
+        routeLambdaUpdateWrapper.set(Route::getUpdateTime,LocalDateTime.now());
+        routeMapper.update(routeLambdaUpdateWrapper);
+        updateRouteId(0L);
+    }
+
     /**
      * todo 核心代码：人车拟合
      * @param id
@@ -382,7 +448,3 @@ public class PassengerServiceImpl extends ServiceImpl<PassengerMapper, Passenger
         return R * c;
     }
 }
-
-
-
-

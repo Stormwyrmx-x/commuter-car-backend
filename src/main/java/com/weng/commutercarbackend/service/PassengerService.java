@@ -37,4 +37,6 @@ public interface PassengerService extends IService<Passenger> {
     void updateGetoffStationName(Passenger passenger, String getoffStationName);
 
     void checkStop(Long id, LocationAddRequest locationAddRequest) throws IOException;
+
+    void cancelRoute(String getonStationName, String getoffStationName);
 }
