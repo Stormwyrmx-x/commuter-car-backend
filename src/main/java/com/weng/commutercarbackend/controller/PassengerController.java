@@ -66,6 +66,16 @@ public class PassengerController {
     }
 
     /**
+     * 取消路线选择
+     */
+    @PutMapping("/task/cancel")
+    public Result<Boolean> cancelRoute(){
+        passengerService.updateRouteId(0L);
+        return Result.success(true);
+    }
+
+
+    /**
      * 获取当前登录乘客信息
      * @param passenger
      * @return
