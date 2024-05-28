@@ -43,7 +43,7 @@ public class PassengerController {
     private final RouteMapper routeMapper;
 
     /**
-     * 查询对应时间、路线号下有哪些尚未满员的工单
+     * 查询对应时间、路线号下有哪些尚未满员的路线
      * todo 按照日来查询
      */
     @GetMapping("/task")
@@ -55,7 +55,6 @@ public class PassengerController {
 
     /**
      * 选择路线
-     * todo 取消路线选择
      */
     @PutMapping("/task/{taskId}")
     public Result<Boolean> chooseRoute(@PathVariable Long taskId){
